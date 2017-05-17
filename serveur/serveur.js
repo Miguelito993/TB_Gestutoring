@@ -27,7 +27,7 @@ app.get('/sous-sol', function (req, res) {
         db.close();
     });
 
-    res.json({vin: 'marques'});
+    //res.json({wine: 'marques', year: '2011', region: 'portugal'});
 });
 
 app.use(function (req, res, next) {

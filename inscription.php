@@ -103,7 +103,7 @@
                   <div class="col-sm-8">
                       <select class="form-control" id="inputCity" required>
                           <?php
-                            $fileDep = fopen('./assets/department.txt', 'r');
+                            $fileDep = fopen('./assets/departments.txt', 'r');
                             while(($department = fgets($fileDep)) != NULL){
                                 echo '<option>'.$department.'</option>';
                             }                           

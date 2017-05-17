@@ -55,40 +55,17 @@
                                        
                     window.alert($("#inputSearch").val());
                     
+                    /* Get requests to server and print json data return
                     $.get(
                             'http://localhost:4242/sous-sol',
                             'false',
                             function(data){
-                                console.log(data);
+                                //console.log(data);
+                                $('#test').append(data['wine']+" "+data['year']);
                             },
                             'json'
                     );
-                    
-            /*        
-                    // On envoi la requête AJAX
-                    $.post(
-                        'connexion.php',
-                        {
-                            login: $('#inputLogin').val(),
-                            password: $('#inputPassword').val()
-                        },
-                     
-                        function(data){                            
-                            if(data == 'Success'){
-                                // Changé la page
-                                window.location.replace("index.php");
-                            }else if (data == 'Failed'){
-                                $("#alertPopUp").attr('class', 'alert alert-danger alert-dismissible');                               
-                                $("#alertPopUp").empty();
-                                $("#alertPopUp").append("Login/Password erroné");
-                            }else if (data == 'Empty'){
-                                $("#alertPopUp").attr('class', 'alert alert-danger alert-dismissible');
-                                $("#alertPopUp").empty();
-                                $("#alertPopUp").append("Champ vide");
-                            }
-                        }
-                    );
-            */
+                    */
                 });
             }); 
             
