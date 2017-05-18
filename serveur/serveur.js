@@ -34,6 +34,15 @@ var getMatieres = function(db, callback){
     });
 }
 
+var checkLogin = function(db, callback){
+    var collection = db.collection('t_users');
+    
+    collection.find({},{pseudo: 1, password: 1}).toArray(function(err, docs){   
+        assert.equal(err, null);
+        callback(docs);
+    });
+}
+
 app.use(morgan('combined')); // Log dans la console
 
 app.use(cors()); // Autorise toutes les CORS Requests
@@ -62,6 +71,25 @@ app.get('/getMatieres', function (req, res) {
             db.close();
         });        
     });
+});
+
+app.post('/checkLogin/:pseudo/:pwd', function (req, res) {
+
+    //TODO: Vérifier s'il y a un moyen de passer les paramètres par les arguments de post plutôt que par l'url
+    var pseudo = req.params.pseudo;
+    var pwd = req.params.pwd;
+    
+    console.log(pseudo + " " + pwd);
+    res.send('ok');
+    /*
+    MongoClient.connect(urlDB, function (err, db) {
+        assert.equal(err, null);
+        
+        getMatieres(db, function(docs){
+            res.jsonp(docs);
+            db.close();
+        });        
+    });*/
 });
 
 app.use(function (req, res, next) {
