@@ -1,5 +1,6 @@
 <?php
-echo    '<ul class="nav navbar-nav">
+
+echo '<ul class="nav navbar-nav">
             <li><a href="evenement.php">Événement</a></li>
             <li><a href="depense.php">Dépense</a></li>
             <li class="dropdown">
