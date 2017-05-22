@@ -12,16 +12,16 @@
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <?php
-            if (isset($_SESSION['user'])) {
+            if (isset($_SESSION['pseudo'])) {
                 include './inc/inc_menu.php';
             }
             ?>
             <ul class="nav navbar-nav navbar-right">
                 <?php
-                if (!isset($_SESSION['user'])) {
+                if (!isset($_SESSION['pseudo'])) {
                     echo '<li><a href="./connexion.php">Se connecter</a></li><li><a href="./inscription.php">S\'inscrire</a></li>';
                 } else {
-                    echo '<li><a href="./logout.php">Bienvenue ' . $_SESSION['user'] . ' [Déconnexion]</a></li>';
+                    echo '<li><a href="./logout.php">Bienvenue ' . $_SESSION['pseudo'] . ' [Déconnexion]</a></li>';
                 }
                 ?>
             </ul>

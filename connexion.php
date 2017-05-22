@@ -24,29 +24,7 @@ session_start();
 
         <div class="container">
             <?php
-            if (!isset($_SESSION['user'])) {
-                if (isset($_SESSION['msgInscription'])) {
-                    if ($_SESSION['msgInscription'] == 'Success') {
-                        echo '<div id="alertPopUp" class="alert alert-success" role="alert">
-                                        L\'utilisateur a été créé avec succés
-                                    </div>';
-                    } elseif ($_SESSION['msgInscription'] == 'LoginExist') {
-                        echo '<div id="alertPopUp" class="alert alert-danger" role="alert">
-                                        Ce login est déjà existant dans notre système
-                                    </div>';
-                    } else {
-                        echo '<div id="alertPopUp" class="alert alert-danger" role="alert">
-                                        Veuillez renseigner les champs
-                                    </div>';
-                    }
-                    unset($_SESSION['msgInscription']);
-                } else {
-                    echo '<div id="alertPopUp" role="alert">
-                                </div>';
-                }
-            } else {
-                echo '<h1 class="display-3">Bienvenue sur mon site, veuillez utilisez les menus pour naviguer</h1>';
-            }
+                echo '<div id="alertPopUp" role="alert"></div>';
             ?>
 
             <form method="post" id="connexForm" class="form-horizontal">
@@ -86,15 +64,34 @@ session_start();
                 $('#connexForm').submit(function (e) {
                     // On désactive le comportement par défaut du navigateur
                     e.preventDefault();
-                    
-                    var pseudo = $('#inputPseudo').val();
-                    var pwd = $('#inputPassword').val();
 
                     $.post(
-                            'http://localhost:4242/checkLogin/'+pseudo+'/'+pwd+'/',
-                            null,
-                            function(data){
-                                window.alert(data);
+                            'http://localhost:4242/checkLogin',
+                            {
+                                pseudo: $('#inputPseudo').val(),
+                                pwd: $('#inputPassword').val()
+                                //TODO: Prévoir une méthode pour chiffrer le mot de passe (autre que CryptoJS)
+                            }
+                    ,
+                            function (data) {
+                                
+                                if(data.status == 'Success'){
+                                    $("#alertPopUp").attr('class', 'alert alert-success alert-dismissible');                               
+                                    $("#alertPopUp").empty();
+                                    $("#alertPopUp").append("Connexion réussie, vous allez être redirigé");
+                                    
+                                    $.post('fillSession.php', {myUser: data.docs[0]});
+                                    
+                                    // Changé la page
+                                    window.location.replace("index.php", 2000);
+                                }else if(data.status == 'Failed'){
+                                    $("#alertPopUp").attr('class', 'alert alert-danger alert-dismissible');                               
+                                    $("#alertPopUp").empty();
+                                    $("#alertPopUp").append("Login/Password erroné");
+                                    
+                                    $("#inputPassword").val("");
+                                }
+                                
                             }
                     );
 
