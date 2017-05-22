@@ -81,9 +81,18 @@ session_start();
                                     $("#alertPopUp").append("Connexion réussie, vous allez être redirigé");
                                     
                                     $.post('fillSession.php', {myUser: data.docs[0]});
+                                    $.post('http://localhost:4242/changeStatus', {
+                                        id: data.docs[0]._id, 
+                                        statusOnline: true
+                                        },
+                                        function(data){
+                                            console.log(data);
+                                            // Changé la page
+                                            window.location.replace("index.php", 2000);
+                                        }
+                                    );
                                     
-                                    // Changé la page
-                                    window.location.replace("index.php", 2000);
+                                    
                                 }else if(data.status == 'Failed'){
                                     $("#alertPopUp").attr('class', 'alert alert-danger alert-dismissible');                               
                                     $("#alertPopUp").empty();
@@ -94,33 +103,6 @@ session_start();
                                 
                             }
                     );
-
-                    //TODO: Vérifier que les logins ne sont pas vides et envoyer au serveur les informations
-                    /*        
-                     // On envoi la requête AJAX                    
-                     $.post(
-                     'connexion.php',
-                     {
-                     login: $('#inputLogin').val(),
-                     password: $('#inputPassword').val()
-                     },
-                     
-                     function(data){                            
-                     if(data == 'Success'){
-                     // Changé la page
-                     window.location.replace("index.php");
-                     }else if (data == 'Failed'){
-                     $("#alertPopUp").attr('class', 'alert alert-danger alert-dismissible');                               
-                     $("#alertPopUp").empty();
-                     $("#alertPopUp").append("Login/Password erroné");
-                     }else if (data == 'Empty'){
-                     $("#alertPopUp").attr('class', 'alert alert-danger alert-dismissible');
-                     $("#alertPopUp").empty();
-                     $("#alertPopUp").append("Champ vide");
-                     }
-                     }
-                     );
-                     */
                 });
             });
 

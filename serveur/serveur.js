@@ -14,7 +14,8 @@ var app = require('express')(),
         MongoClient = require('mongodb').MongoClient, // Accès à la base de données
         cors = require('cors'),
         assert = require('assert'),
-        bodyParser = require('body-parser');
+        bodyParser = require('body-parser')
+        ObjectId = require('mongodb').ObjectId;
 
 
 var getDepartments = function (db, callback) {
@@ -42,6 +43,17 @@ var checkLogin = function (db, user, callback) {
         assert.equal(err, null);       
         callback(docs);
     });
+}
+
+var changeStatus = function (db, info, callback) {
+    var collection = db.collection('t_users');
+        
+    collection.update({ "_id": ObjectId(info.id) }, { $set: {"isOnline": info.statusOnline} }, 
+        function(err, docs) {
+            assert.equal(err, null);
+            callback(docs);
+        }
+    );
 }
 
 app.use(morgan('combined')); // Log dans la console
@@ -99,6 +111,22 @@ app.post('/checkLogin', function (req, res) {
         db.close();
        });        
     });
+});
+
+app.post('/changeStatus', function (req, res) {    
+    var info = {"id": req.body.id, "statusOnline": req.body.statusOnline };
+        
+    if((info.id != null) && (info.statusOnline != null)){
+        MongoClient.connect(urlDB, function (err, db) {
+           assert.equal(err, null);
+
+            changeStatus(db, info, function(docs){
+                
+            res.jsonp(docs);
+            db.close();
+           });        
+        });
+    }
 });
 
 app.use(function (req, res, next) {
