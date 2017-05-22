@@ -13,32 +13,33 @@ var app = require('express')(),
         morgan = require('morgan'), // Utile pour les logs
         MongoClient = require('mongodb').MongoClient, // Accès à la base de données
         cors = require('cors'),
-        assert = require('assert');
+        assert = require('assert'),
+        bodyParser = require('body-parser');
 
 
-var getDepartments = function(db, callback){
+var getDepartments = function (db, callback) {
     var collection = db.collection('t_departments');
-    
-    collection.find({}).toArray(function(err, docs){  
+
+    collection.find({}).toArray(function (err, docs) {
         assert.equal(err, null);
         callback(docs);
     });
 }
 
-var getMatieres = function(db, callback){
+var getMatieres = function (db, callback) {
     var collection = db.collection('t_matieres');
-    
-    collection.find({}, {name: 1}).toArray(function(err, docs){   
+
+    collection.find({}, {name: 1}).toArray(function (err, docs) {
         assert.equal(err, null);
         callback(docs);
     });
 }
 
-var checkLogin = function(db, callback){
+var checkLogin = function (db, user, callback) {
     var collection = db.collection('t_users');
-    
-    collection.find({},{pseudo: 1, password: 1}).toArray(function(err, docs){   
-        assert.equal(err, null);
+
+    collection.find({pseudo: user.pseudo, password: user.password}).toArray(function (err, docs) {
+        assert.equal(err, null);       
         callback(docs);
     });
 }
@@ -47,16 +48,20 @@ app.use(morgan('combined')); // Log dans la console
 
 app.use(cors()); // Autorise toutes les CORS Requests
 
+app.use(bodyParser.json()); // Supporte encodage json body
+
+app.use(bodyParser.urlencoded({extended: true})); // Supporte encodage body
+
 app.get('/getDepartments', function (req, res) {
     res.setHeader('Content-Type', 'text/plain');
 
     MongoClient.connect(urlDB, function (err, db) {
         assert.equal(err, null);
-        
-        getDepartments(db, function(docs){
+
+        getDepartments(db, function (docs) {
             res.jsonp(docs);
             db.close();
-        });        
+        });
     });
 });
 
@@ -65,31 +70,35 @@ app.get('/getMatieres', function (req, res) {
 
     MongoClient.connect(urlDB, function (err, db) {
         assert.equal(err, null);
-        
-        getMatieres(db, function(docs){
+
+        getMatieres(db, function (docs) {
             res.jsonp(docs);
             db.close();
-        });        
+        });
     });
 });
 
-app.post('/checkLogin/:pseudo/:pwd', function (req, res) {
+app.post('/checkLogin', function (req, res) {
 
-    //TODO: Vérifier s'il y a un moyen de passer les paramètres par les arguments de post plutôt que par l'url
-    var pseudo = req.params.pseudo;
-    var pwd = req.params.pwd;
+    var pseudo = req.body.pseudo;
+    var pwd = req.body.pwd;
     
-    console.log(pseudo + " " + pwd);
-    res.send('ok');
-    /*
+    var user = {"pseudo": pseudo, "password": pwd };
+            
     MongoClient.connect(urlDB, function (err, db) {
-        assert.equal(err, null);
+       assert.equal(err, null);
+
+       checkLogin(db, user, function(docs){
+             
+        if(docs[0] != null){  
+            res.jsonp({status: 'Success', docs});
+        }else{ 
+            res.jsonp({status: 'Failed'});
+        }           
         
-        getMatieres(db, function(docs){
-            res.jsonp(docs);
-            db.close();
-        });        
-    });*/
+        db.close();
+       });        
+    });
 });
 
 app.use(function (req, res, next) {
