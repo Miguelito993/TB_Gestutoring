@@ -137,7 +137,7 @@ session_start();
                     <label for="inputMatiere" class="col-sm-2 control-label">Matières d'enseignements <span id="infoPopOver" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" title="Info" data-trigger="hover" data-content="Veuillez utiliser la touche 'Ctrl' pour sélectionner plusieurs matières"></span></label>
                     <div class="col-sm-8">
                         <select multiple class="form-control" id="inputMatiere">
-                            
+
                         </select>
                     </div>                    
                 </div>
@@ -219,23 +219,23 @@ session_start();
                 // Rempli le formulaire des cantons
                 $.getJSON(
                         'http://localhost:4242/getDepartments',
-                        function (data) {                            
+                        function (data) {
                             $.each(data, function (index, d) {
                                 $('#inputCity').append("<option>" + d['name'] + "</option>");
                             });
                         }
                 );
-                
+
                 // Rempli le formulaire des matières
                 $.getJSON(
                         'http://localhost:4242/getMatieres',
-                        function (data) {                            
+                        function (data) {
                             $.each(data, function (index, d) {
                                 $('#inputMatiere').append("<option>" + d['name'] + "</option>");
                             });
                         }
                 );
-                        
+
 
                 $('#inscripForm').submit(function (e) {
                     // On désactive le comportement par défaut du navigateur
