@@ -5,7 +5,7 @@ from pymongo import MongoClient
 client = MongoClient()
 
 def usage(argv0):
-    print("usage:", argv0, "<nom_fichier> <nom_base_de_donnees>")
+    print("usage:", argv0, "<nom_fichier> <nom_collection>")
     sys.exit(1)
 
 def main(argv=sys.argv):
