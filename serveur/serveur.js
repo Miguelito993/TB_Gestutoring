@@ -12,10 +12,11 @@ var app = require('express')(),
         ent = require('ent'), // Permet de bloquer les caractères HTML (sécurité équivalente à htmlentities en PHP)
         morgan = require('morgan'), // Utile pour les logs
         MongoClient = require('mongodb').MongoClient, // Accès à la base de données
-        cors = require('cors'),
+        ObjectId = require('mongodb').ObjectId,
+        cors = require('cors'), // Autorise les requêtes cross-domain
         assert = require('assert'),
-        bodyParser = require('body-parser')
-        ObjectId = require('mongodb').ObjectId;
+        bodyParser = require('body-parser'), // Permet de récupérer les paramètres d'une requête POST
+        fs = require('fs');
 
 
 var getDepartments = function (db, callback) {
@@ -91,11 +92,7 @@ app.get('/getMatieres', function (req, res) {
 });
 
 app.post('/checkLogin', function (req, res) {
-
-    var pseudo = req.body.pseudo;
-    var pwd = req.body.pwd;
-    
-    var user = {"pseudo": pseudo, "password": pwd };
+    var user = {"pseudo": req.body.pseudo, "password": req.body.pwd };
             
     MongoClient.connect(urlDB, function (err, db) {
        assert.equal(err, null);
@@ -127,6 +124,38 @@ app.post('/changeStatus', function (req, res) {
            });        
         });
     }
+});
+
+app.post('/submitInscription',function(req, res){
+    /*
+    var firstname = req.body.firstname,
+        name = req.body.name,
+        email = req.body.email,
+        pseudo = req.body.pseudo,
+        pwd = req.body.pwd,
+        city = req.body.city,
+        soldes = 0,
+        type = req.body.type,
+        isOnline = false;
+    //var imgProfil = req.body.imgProfil;
+    if(type == "Student"){
+        var emailParent = req.body.emailParent;
+    }else if(type == "Coach"){
+        var diplomes = req.body.diplomes,
+            tarif = req.body.tarif,
+            isValid = false,
+            matieres = req.body.matieres;
+    }
+     */
+   /*
+    * https://codeforgeek.com/2014/11/file-uploads-using-node-js/
+    * Suivre cet exemple pour recupèrer les fichiers
+    * 
+    * Exemple disponible dans le dossier Téléchargements
+    */
+    
+    
+    
 });
 
 app.use(function (req, res, next) {

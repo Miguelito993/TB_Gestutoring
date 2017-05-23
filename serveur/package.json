@@ -1,7 +1,22 @@
 {
-  "name": "tb_server", "version": "1.0.0", "description": "server for GesTutoring website", "main": "serveur.js", "scripts": {
+  "name": "tb_server",
+  "version": "1.0.0",
+  "description": "server for GesTutoring website",
+  "main": "serveur.js",
+  "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
-  }, "author": "Miguel Pereira", "license": "ISC", "dependencies": {
-    "assert": "^1.4.1", "body-parser": "^1.17.2", "cors": "^2.8.3", "ent": "^2.2.0", "express": "^4.15.2", "mongodb": "^2.2.26", "morgan": "^1.8.1", "socket.io": "^2.0.1"
+  },
+  "author": "Miguel Pereira",
+  "license": "ISC",
+  "dependencies": {
+    "assert": "^1.4.1",
+    "body-parser": "^1.17.2",
+    "cors": "^2.8.3",
+    "ent": "^2.2.0",
+    "express": "^4.15.2",
+    "fs": "0.0.1-security",
+    "mongodb": "^2.2.26",
+    "morgan": "^1.8.1",
+    "socket.io": "^2.0.1"
   }
 }
