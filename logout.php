@@ -12,7 +12,6 @@
             statusOnline: false
             },
             function(data){
-                console.log(data);
                 <?php unset($prevID); ?>
                 window.location.replace("index.php");
             }
