@@ -23,7 +23,14 @@ session_start();
         <!-- End Fixed navbar -->
 
         <div class="container">
-            
+            <video id="localVideo" autoplay muted></video>
+            <video id="remoteVideo" autoplay></video>
+
+            <div>
+              <button id="startButton">Start</button>
+              <button id="callButton">Call</button>
+              <button id="hangupButton">Hang Up</button>
+            </div>
 
         </div> <!-- /container -->    
 
