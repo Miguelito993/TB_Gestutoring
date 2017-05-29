@@ -49,7 +49,7 @@ session_start();
             }
             ?>
 
-            <form method="post" id="inscripForm" class="form-horizontal" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" id="inscripForm" class="form-horizontal">
                 <h2 class="text-center">Inscription</h2> 
 
                 <div id="alertPopUp" role="alert">
@@ -58,49 +58,49 @@ session_start();
                 <div class="form-group">
                     <label for="inputFirstname" class="col-sm-2 control-label">Prénom</label>
                     <div class="col-sm-8">
-                        <input type="text" class="form-control" id="inputFirstname" required>
+                        <input type="text" class="form-control" id="inputFirstname" name="inputFirstname" required>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="inputName" class="col-sm-2 control-label">Nom</label>
                     <div class="col-sm-8">
-                        <input type="text" class="form-control" id="inputName" required>
+                        <input type="text" class="form-control" id="inputName" name="inputName" required>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="inputEmail" class="col-sm-2 control-label">E-mail</label>
                     <div class="col-sm-8">
-                        <input type="email" class="form-control" id="inputEmail" required>
+                        <input type="email" class="form-control" id="inputEmail" name="inputEmail" required>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="inputPseudo" class="col-sm-2 control-label">Pseudo</label>
                     <div class="col-sm-8">
-                        <input type="text" class="form-control" id="inputPseudo" required>
+                        <input type="text" class="form-control" id="inputPseudo" name="inputPseudo" required>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="inputPassword" class="col-sm-2 control-label">Mot de passe</label>
                     <div class="col-sm-8">
-                        <input type="password" class="form-control" id="inputPassword" required>
+                        <input type="password" class="form-control" id="inputPassword" name="inputPassword" required>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="inputPassword2" class="col-sm-2 control-label">Confirmer mot de passe</label>
                     <div class="col-sm-8">
-                        <input type="password" class="form-control" id="inputPassword2" required>
+                        <input type="password" class="form-control" id="inputPassword2" name="inputPassword2" required>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="inputCity" class="col-sm-2 control-label">Canton</label>
                     <div class="col-sm-8">
-                        <select class="form-control" id="inputCity" required>
+                        <select class="form-control" id="inputCity" name="inputCity" required>
                             <!-- Formulaire rempli à l'aide de JQuery -->
                         </select>
                     </div>
@@ -121,14 +121,14 @@ session_start();
                 <div id="divEmailParent" class="form-group">
                     <label for="inputEmailParent" class="col-sm-2 control-label">E-mail d'un parent</label>
                     <div class="col-sm-8">
-                        <input type="email" class="form-control" id="inputEmailParent" required>
+                        <input type="email" class="form-control" id="inputEmailParent" name="inputEmailParent" required>
                     </div>
                 </div>
 
                 <div id="divTarif" class="form-group" hidden>
                     <label for="inputTarif" class="col-sm-2 control-label">Tarif</label>
                     <div class="col-sm-6">
-                        <input type="number" class="form-control" id="inputTarif" step="1" min="1" max="50">
+                        <input type="number" class="form-control" id="inputTarif" name="inputTarif" step="1" min="1" max="50">
                     </div>
                     <label class="control-label">CHF/Heure</label>
                 </div>
@@ -136,7 +136,7 @@ session_start();
                 <div id="divMatiere" class="form-group" hidden>
                     <label for="inputMatiere" class="col-sm-2 control-label">Matières d'enseignements <span id="infoPopOver" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" title="Info" data-trigger="hover" data-content="Veuillez utiliser la touche 'Ctrl' pour sélectionner plusieurs matières"></span></label>
                     <div class="col-sm-8">
-                        <select multiple class="form-control" id="inputMatiere">
+                        <select multiple class="form-control" id="inputMatiere" name="inputMatiere">
 
                         </select>
                     </div>                    
@@ -145,7 +145,7 @@ session_start();
                 <div id="divDiplome" class="form-group" hidden>
                     <label for="inputDiplome" class="col-sm-2 control-label">Diplômes</label>
                     <div class="col-sm-8">
-                        <input type="file" accept='.pdf' id="inputDiplome" multiple>
+                        <input type="file" accept='.pdf' id="inputDiplome" name="inputDiplome" multiple>
                     </div>
                 </div>
 
@@ -239,10 +239,34 @@ session_start();
                 $('#inscripForm').submit(function (e) {
                     // On désactive le comportement par défaut du navigateur
                     e.preventDefault();
-
+                    
+                    var form = $('#inscripForm')[0];
+                    var data = new FormData(form);  
+                    
+                    //TODO: Vérifier que les deux passwords sont identiques.
+                    //      Vérifier que le pseudo et le mail ne sont pas déjà présents dans la base de données.
+                                    
+                    
+                    $.ajax({
+                        type: "POST",
+                        enctype: 'multipart/form-data',
+                        url: 'http://localhost:4242/submitInscription',
+                        data: data,
+                        processData: false,
+                        contentType: false,
+                        cache: false,
+                        success: function(data){
+                            console.log("Success: ", data);
+                        },
+                        error: function(e){
+                            console.log("Error: ", e);
+                        }
+                    });
+                    /*
                     $.post(
-                        'http://localhost:4242/submitInscription',
-                        {
+                            'http://localhost:4242/submitInscription',
+                            {
+                               
                             firstname: $('#inputFirstname').val(),
                             name: $('#inputName').val(),
                             email: $('#inputEmail').val(),
@@ -253,16 +277,18 @@ session_start();
                             type: $('input[name=inputType]:checked').val(),
                             isOnline: false,
                         
-                            diplomes: $('#inputDiplome').val(),
+                            diplomes: $('#inputDiplome').val()
                             tarif: $('#inputTarif').val(),
                             isValid: false,
                             matieres: $('#inputMatiere').val()
-                        }
+                            }
                     ,
-                        function (data) {
-                            console.log(data);
-                        }
+                            function (data) {
+                                console.log(data);
+                            }
                     );
+                    */
+                    
 
                     /*        
                      // On envoi la requête AJAX
