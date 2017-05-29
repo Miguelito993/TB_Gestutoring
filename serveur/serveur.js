@@ -18,7 +18,8 @@ var app = require('express')(),
         cors = require('cors'), // Autorise les requêtes cross-domain
         assert = require('assert'),
         util = require('util'), // Afficher le contenu des objets
-        bodyParser = require('body-parser'); // Permet de récupérer les paramètres d'une requête POST
+        bodyParser = require('body-parser'),
+        ExpressPeerServer = require('peer').ExpressPeerServer; // Permet de récupérer les paramètres d'une requête POST
         
 
 var storage = multer.diskStorage({
@@ -146,7 +147,6 @@ app.use(morgan('combined')); // Log dans la console
 app.use(cors()); // Autorise toutes les CORS Requests
 
 app.use(bodyParser.json()); // Supporte encodage json body
-
 app.use(bodyParser.urlencoded({extended: true})); // Supporte encodage body
 
 app.get('/getDepartments', function (req, res) {
@@ -216,6 +216,8 @@ app.post('/submitInscription',function(req, res){
         res.send("Inscription is done");
     });   
 });
+
+app.use('/peerjs', ExpressPeerServer(server, {debug: true}));
 
 app.use(function (req, res, next) {
     res.setHeader('Content-Type', 'text/plain');
