@@ -1,0 +1,16 @@
+.file, em {
+  color: #999;
+  font-style: italic;
+}
+.peer {
+  color: #FF7500;
+  font-weight: 600;
+}
+.you {
+  color: #0C6BA1;
+  font-weight: 600;
+}
+.connection{
+    overflow: scroll;
+    height: 200px
+}
