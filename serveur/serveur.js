@@ -65,11 +65,11 @@ function parseUserInfo(body){
             type : body.inputType,
             isOnline : false,
             imgProfil : null,
-            emailParent : (body.inputType == "Student")?ent.encode(body.inputEmailParent):null,
-            diplomes : (body.inputType == "Coach")?'dipl_' + ent.encode(body.inputPseudo) + '_' + Date.now() + '.pdf':null,        
-            tarif : (body.inputType == "Coach")?ent.encode(body.inputTarif):null,
-            isValid : (body.inputType == "Coach")?false:true,
-            matieres : (body.inputType == "Coach")?body.inputMatiere:null
+            emailParent : (body.inputType === "Student")?ent.encode(body.inputEmailParent):null,
+            diplomes : (body.inputType === "Coach")?'dipl_' + ent.encode(body.inputPseudo) + '_' + Date.now() + '.pdf':null,        
+            tarif : (body.inputType === "Coach")?ent.encode(body.inputTarif):null,
+            isValid : (body.inputType === "Coach")?false:true,
+            matieres : (body.inputType === "Coach")?body.inputMatiere:null
         }
     
     return user;
@@ -111,6 +111,15 @@ var changeStatus = function (db, info, callback) {
             callback(docs);
         }
     );
+}
+
+var getCoaches = function (db, matiere, callback) {
+    var collection = db.collection('t_users');
+
+    collection.find({type: "Coach", isValid : true, matieres: matiere}).toArray(function (err, docs) {
+        assert.equal(err, null);
+        callback(docs);
+    });
 }
 
 var insertUser = function (db, user) {
@@ -231,6 +240,21 @@ app.post('/submitInscription',function(req, res){
         }
         res.send("Inscription is done");
     });   
+});
+
+app.get('/getCoaches/:matiere', function (req, res) {    
+    res.setHeader('Content-Type', 'text/plain');
+    
+    var param = req.params.matiere; 
+
+    MongoClient.connect(urlDB, function (err, db) {
+        assert.equal(err, null);
+
+        getCoaches(db, param, function (docs) {
+            res.jsonp(docs);
+            db.close();
+        });
+    });
 });
 
 app.use('/peerjs', ExpressPeerServer(server, {debug: true}));

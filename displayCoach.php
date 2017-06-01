@@ -1,5 +1,11 @@
 <?php
 session_start();
+
+if(!isset($_POST['submitSearch'])){
+    header('Location: index.php');
+    exit();
+}
+$matiere = $_POST['inputSearch'];
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -23,42 +29,31 @@ session_start();
         <!-- End Fixed navbar -->
 
         <div class="container">
-            <h2 class="text-center">Recherchez des répétiteurs:</h2> 
-            <form method="post" id="searchCoach" class="form-horizontal" action="displayCoach.php">               
-                <div class="form-group">
-                    <label for="inputSearch" class="col-sm-2 control-label">Thème:</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" id="inputSearch" name="inputSearch" placeholder="Votre matière" required>
-                    </div>
-                    <input type="submit" id="submitSearch" name="submitSearch" class="btn btn-primary" value="Rechercher"/>
-                </div>
-            </form>            
+            <h2 class="text-center">Résultats pour: <?php echo $matiere; ?></h2> 
+            <div id="CoachList">
+                
+            </div>            
 
         </div> <!-- /container -->    
 
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
         <script src="./bootstrap/js/bootstrap.js"></script>
-        <script>
-            var subject = [];
-            
-            // Rempli le formulaire des matières
+        <script>                        
+            // Recupère les coachs
             $.getJSON(
-                    'http://localhost:4242/getMatieres',                    
+                    'http://localhost:4242/getCoaches/<?php echo $matiere;?>',                   
                     function (data) {
                         $.each(data, function (index, d) {
-                            subject.push(d['name']);
+                            $('#CoachList').append('<span id="'+d['pseudo']+'">'+d['prenom']+' '+d['nom']+'</span>');
                         });
                     }
-            );           
-
-            $('#inputSearch').autocomplete({
-                source: subject
-            });
-
+            ); 
+            
 /*
             jQuery(document).ready(function ($) {
-                
+            
+            
             });
 */
         </script>
