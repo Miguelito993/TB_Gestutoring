@@ -262,33 +262,7 @@ session_start();
                             console.log("Error: ", e);
                         }
                     });
-                    /*
-                    $.post(
-                            'http://localhost:4242/submitInscription',
-                            {
-                               
-                            firstname: $('#inputFirstname').val(),
-                            name: $('#inputName').val(),
-                            email: $('#inputEmail').val(),
-                            pseudo: $('#inputPseudo').val(),
-                            pwd: $('#inputPassword').val(),
-                            city: $('#inputCity').val(),
-                            soldes: 0,
-                            type: $('input[name=inputType]:checked').val(),
-                            isOnline: false,
-                        
-                            diplomes: $('#inputDiplome').val()
-                            tarif: $('#inputTarif').val(),
-                            isValid: false,
-                            matieres: $('#inputMatiere').val()
-                            }
-                    ,
-                            function (data) {
-                                console.log(data);
-                            }
-                    );
-                    */
-                    
+                                      
 
                     /*        
                      // On envoi la requête AJAX
