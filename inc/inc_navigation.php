@@ -25,7 +25,8 @@
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Bienvenue ' . $_SESSION['pseudo'] . '<span class="caret"></span></a>
                             <ul class="dropdown-menu">
                                 <li><a href="#">Exemple #2</a></li>
-                                <li><a href="./logout.php">Déconnexion</a></li>                      
+                                <li><a href="#" class="glyphicon glyphicon-user" aria-hidden="true"> Profil</a></li>
+                                <li><a href="./logout.php" class="glyphicon glyphicon-off" aria-hidden="true"> Déconnexion</a></li>                      
                             </ul>
                           </li>';
                 }
