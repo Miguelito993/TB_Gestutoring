@@ -26,32 +26,15 @@ var storage = multer.diskStorage({
     destination: function(req, file, callback){
         callback(null, './uploads');
     },
-    filename: function(req, file, callback){
-        var user = {        
-            firstname : ent.encode(req.body.inputFirstname),
-            name : ent.encode(req.body.inputName),
-            email : ent.encode(req.body.inputEmail),
-            pseudo : ent.encode(req.body.inputPseudo),
-            pwd : ent.encode(req.body.inputPassword),
-            city : ent.encode(req.body.inputCity),
-            soldes : 0,
-            type : req.body.inputType,
-            isOnline : false,
-            imgProfil : null,
-            emailParent : (req.body.inputType == "Student")?ent.encode(req.body.inputEmailParent):null,
-
-            diplomes : 'dipl_' + ent.encode(req.body.inputPseudo) + '_' + Date.now() + '.pdf',        
-            tarif : (req.body.inputType == "Coach")?ent.encode(req.body.inputTarif):null,
-            isValid : false,
-            matieres : (req.body.inputType == "Coach")?req.body.inputMatiere:null
-        }
+    filename: function(req, file, callback){       
+        var user = parseUserInfo(req.body);
                
         MongoClient.connect(urlDB, function (err, db) {
             assert.equal(err, null);
             
             // Impose un timer dans le cas où l'utilisateur charge plusieurs diplômes à faire valider
-            setTimeout(checkLogin(db, {pseudo: user.pseudo, password: user.pwd}, function(docs){              
-                if(docs[0] == null){  
+            setTimeout(checkLogin(db, {pseudo: user.pseudo, password: user.pwd}, function(docs){
+                if(docs[0] == null){                   
                    // Ajouter le nouvel utilisateur avec le nouveau diplome
                    insertUser(db, user); 
                 }else{
@@ -69,6 +52,28 @@ var storage = multer.diskStorage({
 
 var upload = multer({storage: storage}).any();
 
+function parseUserInfo(body){
+    
+    var user = {        
+            firstname : ent.encode(body.inputFirstname),
+            name : ent.encode(body.inputName),
+            email : ent.encode(body.inputEmail),
+            pseudo : ent.encode(body.inputPseudo),
+            pwd : ent.encode(body.inputPassword),
+            city : body.inputCity,
+            soldes : 0,
+            type : body.inputType,
+            isOnline : false,
+            imgProfil : null,
+            emailParent : (body.inputType == "Student")?ent.encode(body.inputEmailParent):null,
+            diplomes : (body.inputType == "Coach")?'dipl_' + ent.encode(body.inputPseudo) + '_' + Date.now() + '.pdf':null,        
+            tarif : (body.inputType == "Coach")?ent.encode(body.inputTarif):null,
+            isValid : (body.inputType == "Coach")?false:true,
+            matieres : (body.inputType == "Coach")?body.inputMatiere:null
+        }
+    
+    return user;
+}
 
 var getDepartments = function (db, callback) {
     var collection = db.collection('t_departments');
@@ -210,6 +215,17 @@ app.post('/changeStatus', function (req, res) {
 
 app.post('/submitInscription',function(req, res){    
     upload(req, res, function(err){
+        if(req.body.inputType == "Student"){
+            var user = parseUserInfo(req.body);
+            MongoClient.connect(urlDB, function (err, db) {
+                assert.equal(err, null);
+
+                 insertUser(db, user, function(docs){                
+                     res.jsonp(docs);
+                     db.close();
+                });        
+             });
+        }
         if(err){
             return res.send(err);
         }
