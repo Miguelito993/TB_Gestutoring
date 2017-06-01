@@ -21,7 +21,13 @@
                 if (!isset($_SESSION['pseudo'])) {
                     echo '<li><a href="./connexion.php">Se connecter</a></li><li><a href="./inscription.php">S\'inscrire</a></li>';
                 } else {
-                    echo '<li><a href="./logout.php">Bienvenue ' . $_SESSION['pseudo'] . ' [Déconnexion]</a></li>';
+                    echo '<li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Bienvenue ' . $_SESSION['pseudo'] . '<span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">Exemple #2</a></li>
+                                <li><a href="./logout.php">Déconnexion</a></li>                      
+                            </ul>
+                          </li>';
                 }
                 ?>
             </ul>
