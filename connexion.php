@@ -16,10 +16,12 @@ session_start();
     </head>
     <body>
 
-        <!-- Fixed navbar -->
-        <?php
-        include './inc/inc_navigation.php';
-        ?>
+        <!-- Fixed navbar -->        
+        <nav id="navMenu" class="navbar navbar-inverse navbar-fixed-top">
+            <?php
+            include './inc/inc_navigation.php';
+            ?>
+        </nav>
         <!-- End Fixed navbar -->
 
         <div class="container">
@@ -52,61 +54,19 @@ session_start();
                     </div>
                 </div>
             </form>
-
         </div> <!-- /container -->
 
+        <!-- Modal -->
+        <?php
+            include './inc/modal_inscrip.php';
+        ?>
+        <!-- /Modal -->
 
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
         <script src="./bootstrap/js/bootstrap.js"></script>
-        <script>
-            jQuery(document).ready(function ($) {
-                $('#connexForm').submit(function (e) {
-                    // On désactive le comportement par défaut du navigateur
-                    e.preventDefault();
-
-                    $.post(
-                            'http://localhost:4242/checkLogin',
-                            {
-                                pseudo: $('#inputPseudo').val(),
-                                pwd: $('#inputPassword').val()
-                                //TODO: Prévoir une méthode pour chiffrer le mot de passe (autre que CryptoJS)
-                            }
-                    ,
-                            function (data) {
-                                
-                                if(data.status == 'Success'){
-                                    $("#alertPopUp").attr('class', 'alert alert-success alert-dismissible');                               
-                                    $("#alertPopUp").empty();
-                                    $("#alertPopUp").append("Connexion réussie, vous allez être redirigé");
-                                    
-                                    $.post('fillSession.php', {myUser: data.docs[0]});
-                                    $.post('http://localhost:4242/changeStatus', {
-                                        id: data.docs[0]._id, 
-                                        statusOnline: true
-                                        },
-                                        function(data){
-                                            console.log(data);
-                                            // Changé la page
-                                            window.location.replace("index.php", 2000);
-                                        }
-                                    );
-                                    
-                                    
-                                }else if(data.status == 'Failed'){
-                                    $("#alertPopUp").attr('class', 'alert alert-danger alert-dismissible');                               
-                                    $("#alertPopUp").empty();
-                                    $("#alertPopUp").append("Login/Password erroné");
-                                    
-                                    $("#inputPassword").val("");
-                                }
-                                
-                            }
-                    );
-                });
-            });
-
-        </script>
+        <script src="./assets/js/connexion.js"></script>
+        <script src="./assets/js/inscription.js"></script>
     </body>
 </html>
 

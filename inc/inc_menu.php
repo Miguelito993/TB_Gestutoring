@@ -1,5 +1,4 @@
 <?php
-
 echo '<ul class="nav navbar-nav">
             <li><a href="session.php">Session</a></li>
             <li><a href="#">Exemple #1</a></li>

@@ -16,13 +16,15 @@ session_start();
     </head>
     <body>
 
-        <!-- Fixed navbar -->
-        <?php
-        include './inc/inc_navigation.php';
-        ?>
+        <!-- Fixed navbar -->        
+        <nav id="navMenu" class="navbar navbar-inverse navbar-fixed-top">
+            <?php
+            include './inc/inc_navigation.php';
+            ?>
+        </nav>
         <!-- End Fixed navbar -->
 
-        <div class="container">
+        <div class="container-fluid">
             <?php
             if (!isset($_SESSION['user'])) {
                 if (isset($_SESSION['msgInscription'])) {
@@ -165,6 +167,7 @@ session_start();
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
         <script src="./bootstrap/js/bootstrap.js"></script>
+        <script src="./assets/js/connexion.js"></script>
         <script>
             function StudentAccount() {
                 $('#divEmailParent').show();
