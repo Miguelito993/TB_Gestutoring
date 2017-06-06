@@ -52,8 +52,7 @@ var storage = multer.diskStorage({
 
 var upload = multer({storage: storage}).any();
 
-function parseUserInfo(body){
-    
+function parseUserInfo(body){    
     var user = {        
             firstname : ent.encode(body.inputFirstname),
             name : ent.encode(body.inputName),
@@ -70,8 +69,7 @@ function parseUserInfo(body){
             tarif : (body.inputType === "Coach")?ent.encode(body.inputTarif):null,
             isValid : (body.inputType === "Coach")?false:true,
             matieres : (body.inputType === "Coach")?body.inputMatiere:null
-        }
-    
+        }    
     return user;
 }
 

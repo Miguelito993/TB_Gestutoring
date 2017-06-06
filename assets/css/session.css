@@ -12,5 +12,15 @@
 }
 .connection{
     overflow: scroll;
-    height: 200px
+    height: 200px;
+}
+.div-chat{
+    position: relative;
+    float: left;
+    width: 60%;
+}
+.div-video{
+    position: relative;
+    float:  right;
+    width: 40%;
 }

@@ -16,29 +16,31 @@ session_start();
         <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
     </head>
     <body>
-
-        <!-- Fixed navbar -->
-        <?php
+        <!-- Fixed navbar -->        
+        <nav id="navMenu" class="navbar navbar-inverse navbar-fixed-top">
+            <?php
             include './inc/inc_navigation.php';
-        ?>
+            ?>
+        </nav>
         <!-- End Fixed navbar -->
 
         <div class="container">
             <h2>PeerJS Video Chat</h2>
-            
-            <!-- Video area -->
-            <div id="video-container" >
-              <video id="their-video" width="640" height="480" class="embed-responsive-item" crossorigin="anonymous" autoplay></video>
-              <video id="my-video" width="320" height="240" class="embed-responsive-item" crossorigin="anonymous" muted="true" autoplay></video>
-            </div>
-            
-            <div id="step4">
-                
+                        
+            <div id="step4" class="div-chat">                
                 <form id="send">
                     <input type="text" id="text" placeholder="Votre message">
                     <input class="btn" type="submit" value="Envoyer">
                 </form>
             </div>
+            
+            <!-- Video area -->
+            <div id="video-container" class="div-video">
+              <video id="their-video" width="450" height="280" class="embed-responsive-item peer-video" crossorigin="anonymous" autoplay></video>
+              <video id="my-video" width="250" height="150" class="embed-responsive-item my-video" crossorigin="anonymous" muted="true" autoplay></video>
+            </div>
+            
+            
             <!-- Steps -->
             <div>
               
@@ -65,21 +67,31 @@ session_start();
               <!-- Call in progress -->
               <div id="step3">
                 <p>Currently in call with <span id="their-id">...</span></p>
-                <p><a href="#" id="end-call">End call</a></p>
+                <p><button type="button" id="end-call" class="btn btn-danger">Terminer l'appel</button></p>
               </div>
             </div>
 
         </div> <!-- /container -->    
-
+       
+        <!-- Modal -->
+        <?php
+            include './inc/modal_inscrip.php';
+        ?>
+        <!-- /Modal -->
+           
+        <!-- Include external JS libs. -->
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
-        <script src="./bootstrap/js/bootstrap.js"></script>
-        <script src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
+        <script src="http://cdn.peerjs.com/0.3/peer.min.js"></script>      
+        
+        <!-- Include internal JS libs. -->
+        <script src="./bootstrap/js/bootstrap.js"></script> 
+        <script src="./assets/js/connexion.js"></script>
+        <script src="./assets/js/inscription.js"></script>
         <script>
             
             // Compatibility shim
             navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-
             
             // No API key required when not using cloud server
             var peer = new Peer({host: 'localhost', port: 4242, path: '/peerjs'});
@@ -175,7 +187,7 @@ session_start();
                 $('#step1-error').hide();
                 step1();
               });
-
+              
               // Get things started
               step1();
             });
@@ -192,8 +204,8 @@ session_start();
             }
 
             function step2 () {
-              $('#step1, #step3, #step4').hide();
-              $('#step2').show();
+              //$('#step1, #step3, #step4').hide();
+              //$('#step2').show();
             }
 
             function step3 (call) {
@@ -211,15 +223,15 @@ session_start();
               window.existingCall = call;
               $('#their-id').text(call.peer);
               call.on('close', step2);
-              $('#step1, #step2').hide();
-              $('#step3').show();
-              $('#step4').show();
+              //$('#step1, #step2').hide();
+              //$('#step3').show();
+              //$('#step4').show();
             }
             
             $(document).ready(function() {
                 $('#send').submit(function(e) {
                     e.preventDefault();
-                    // For each active connection, send the message.
+                    
                     var msg = $('#text').val();
                     var theirId = $('#their-id').text();
                     var conns = peer.connections[theirId];                   
