@@ -7,6 +7,8 @@ const NAME_DB = 'db_gestutoring';
 
 var urlDB = 'mongodb://' + HOST_DB + ':' + PORT_DB + '/' + NAME_DB;
 
+var waitingUsers = {};
+
 var app = require('express')(),
         multer = require('multer'),
         server = require('http').createServer(app),
@@ -103,7 +105,7 @@ var checkLogin = function (db, user, callback) {
 var changeStatus = function (db, info, callback) {
     var collection = db.collection('t_users');
         
-    collection.update({ "_id": ObjectId(info.id) }, { $set: {"isOnline": info.statusOnline} }, 
+    collection.update({ _id: ObjectId(info.id) }, { $set: {isOnline: (info.statusOnline == 'true')} }, 
         function(err, docs) {
             assert.equal(err, null);
             callback(docs);
@@ -260,6 +262,22 @@ app.use('/peerjs', ExpressPeerServer(server, {debug: true}));
 app.use(function (req, res, next) {
     res.setHeader('Content-Type', 'text/plain');
     res.status(404).send('Page introuvable !\n');
+});
+
+io.sockets.on('connection', function(socket, pseudo){
+    
+    socket.on('nouveau_client', function(userInfo){
+        socket.pseudo = userInfo.pseudo;
+        waitingUsers[socket.pseudo] = {};
+        waitingUsers[socket.pseudo]['myID'] = userInfo.myID;
+        waitingUsers[socket.pseudo]['myPartner'] = userInfo.myPartner;
+        console.log(util.inspect(waitingUsers, { showHidden: true, depth: null, colors: true}));
+        if(waitingUsers[userInfo.myPartner] != null){
+            setTimeout(function(){
+                socket.emit('find_partner', {partnerID: waitingUsers[userInfo.myPartner]['myID']});
+            },10000);          
+        }
+    });
 });
 
 server.listen(PORT, HOSTNAME, () => {

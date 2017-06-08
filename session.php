@@ -1,5 +1,5 @@
 <?php
-session_start();
+    session_start();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -82,7 +82,8 @@ session_start();
         <!-- Include external JS libs. -->
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
-        <script src="http://cdn.peerjs.com/0.3/peer.min.js"></script>      
+        <script src="http://cdn.peerjs.com/0.3/peer.min.js"></script>  
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.1/socket.io.js"></script>
         
         <!-- Include internal JS libs. -->
         <script src="./bootstrap/js/bootstrap.js"></script> 
@@ -94,9 +95,12 @@ session_start();
             navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
             
             // No API key required when not using cloud server
-            var peer = new Peer({host: 'localhost', port: 4242, path: '/peerjs'});
-        
-            peer.on('open', function(){
+            var peer = new Peer('<?php echo $_SESSION['_id']; ?>',{host: 'localhost', port: 4242, path: '/peerjs'});
+            var socket = io.connect('http://localhost:4242');    
+            var c;
+            var partner = ('<?php echo $_SESSION['pseudo']; ?>' == 'Alexterrieur')?'IronMan':'Alexterrieur';
+            
+            peer.on('open', function(){                
                 $('#my-id').text(peer.id);
             });
             
@@ -106,7 +110,7 @@ session_start();
             peer.on('error', function(err){
                 console.log(err);
             });
-            
+                             
             function connect(c){
                 if(c.label === 'chat'){
                     var chatbox = $('<div></div>').addClass('connection').addClass('form-control').attr('id', c.peer);
@@ -116,7 +120,7 @@ session_start();
                     $('#step4').prepend(chatbox);
                     
                     c.on('data', function(data){
-                        messages.append('<div><span class="peer">' + c.peer + '</span>: ' + data + '</div>');
+                        messages.append('<div><span class="peer">' + partner + '</span>: ' + data + '</div>');
                     });
                 }else if (c.label === 'file') {
                     c.on('data', function(data) {
@@ -126,7 +130,7 @@ session_start();
                         var dataBlob = new Blob([dataView]);
                         var url = window.URL.createObjectURL(dataBlob);
                         $('#'+ c.peer).find('.messages').append('<div><span class="file">' +
-                            c.peer + ' has sent you a <a target="_blank" href="' + url + '">file</a>.</span></div>');
+                            partner + ' has sent you a <a target="_blank" href="' + url + '">file</a>.</span></div>');
                       }
                     });
                 }
@@ -143,11 +147,103 @@ session_start();
               // Return to step 2 if error occurs
               step2();
             });
-
+/*
             // Click handlers setup
             $(function(){
-              $('#make-call').click(function(){
+              
+            });
+*/
+            function step1 () {
+              // Get audio/video stream
+              navigator.getUserMedia({audio: true, video: true}, function(stream){
+                // Set your video displays
+                $('#my-video').prop('src', URL.createObjectURL(stream));
+
+                window.localStream = stream;
+                step2();
+              }, function(){ $('#step1-error').show(); });
+            }
+
+            function step2 () {
+              $('#step1, #step3, #step4 #video-container').hide();
+              $('#step2').show();
+            }
+
+            function step3 (call) {                
+              // Hang up on an existing call if present
+              if (window.existingCall) {
+                window.existingCall.close();
+              }
+
+              // Wait for stream on the call, then set peer video display
+              call.on('stream', function(stream){
+                $('#their-video').prop('src', URL.createObjectURL(stream));
+              });
+
+              // UI stuff
+              window.existingCall = call;
+              $('#their-id').text(call.peer);
+              call.on('close', step2);
+              $('#step1, #step2').hide();
+              $('#step3, #step4, #video-container').show();
+              
+            }
+            
+            socket.emit('nouveau_client', {pseudo: '<?php echo $_SESSION['pseudo']; ?>', myID: '<?php echo $_SESSION['_id']; ?>', myPartner: partner});          
+                 
+            socket.on('find_partner', function(info){
+                var requestedPeer = info.partnerID;
+                                
+                //TODO: Établir communication ----------------------------------
+                
+                // Initiate a call!
+                var call = peer.call(requestedPeer, window.localStream);
+                                
+                // Create 2 connections, one labelled chat and another labelled file
+                c = peer.connect(requestedPeer, {
+                    label: 'chat',
+                    serialization: 'none',
+                    metadata: {message: 'I want to chat with you!'}
+                });
+                c.on('open', function(){
+                    connect(c);
+                });
+                c.on('error', function(err){ alert(err);});
+                
+                var f = peer.connect(requestedPeer, {
+                    label: 'file',
+                    reliable: true
+                });
+                f.on('open', function(){
+                    connect(f);
+                });
+                f.on('error', function(err){ alert(err);});
+                // -------------------------------------------------------------
+
+                step3(call);
+            });
+            
+            $(document).ready(function() {
+                $('#send').submit(function(e) {
+                    e.preventDefault();
+
+                    var msg = $('#text').val();
+                    var theirId = $('#their-id').text();
+                    var conns = peer.connections[theirId];                   
+
+                      if (conns[1].label === 'chat') {
+                        conns[1].send(msg);
+                        $('.connection').find('.messages').append('<div><span class="you">You: </span>' + msg
+                          + '</div>');
+                      }
+
+                    $('#text').val('');
+                    $('#text').focus();
+                });
+/*
+                $('#make-call').click(function(){
                 var requestedPeer = $('#callto-id').val();
+                console.log(requestedPeer); 
                  
                 // Initiate a call!
                 var call = peer.call(requestedPeer, window.localStream);
@@ -175,7 +271,7 @@ session_start();
 
                 step3(call);
               });
-
+*/
               $('#end-call').click(function(){
                 window.existingCall.close();
                 c.close();
@@ -191,62 +287,7 @@ session_start();
               // Get things started
               step1();
             });
-
-            function step1 () {
-              // Get audio/video stream
-              navigator.getUserMedia({audio: true, video: true}, function(stream){
-                // Set your video displays
-                $('#my-video').prop('src', URL.createObjectURL(stream));
-
-                window.localStream = stream;
-                step2();
-              }, function(){ $('#step1-error').show(); });
-            }
-
-            function step2 () {
-              //$('#step1, #step3, #step4').hide();
-              //$('#step2').show();
-            }
-
-            function step3 (call) {
-              // Hang up on an existing call if present
-              if (window.existingCall) {
-                window.existingCall.close();
-              }
-
-              // Wait for stream on the call, then set peer video display
-              call.on('stream', function(stream){
-                $('#their-video').prop('src', URL.createObjectURL(stream));
-              });
-
-              // UI stuff
-              window.existingCall = call;
-              $('#their-id').text(call.peer);
-              call.on('close', step2);
-              //$('#step1, #step2').hide();
-              //$('#step3').show();
-              //$('#step4').show();
-            }
-            
-            $(document).ready(function() {
-                $('#send').submit(function(e) {
-                    e.preventDefault();
-                    
-                    var msg = $('#text').val();
-                    var theirId = $('#their-id').text();
-                    var conns = peer.connections[theirId];                   
-                    
-                      if (conns[1].label === 'chat') {
-                        conns[1].send(msg);
-                        $('.connection').find('.messages').append('<div><span class="you">You: </span>' + msg
-                          + '</div>');
-                      }
-                    
-                    $('#text').val('');
-                    $('#text').focus();
-                  });
-            });
-            
+                        
         </script>            
     </body>
 </html>
