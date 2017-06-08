@@ -95,7 +95,8 @@ jQuery(document).ready(function ($) {
                 $('#alertPopUp').append("Inscription validé");
 
                 setTimeout(function () {
-                    $('#myInscription').modal('hide')
+                    $('#myInscription').modal('hide');
+                    window.location.replace('index.php');
                 }, 2000);
             },
             error: function (e) {
