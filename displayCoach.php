@@ -48,13 +48,27 @@ $matiere = $_POST['inputSearch'];
         <script src="./assets/js/connexion.js"></script>
         <script src="./assets/js/inscription.js"></script>
         <script>                        
+            var green_circle = "./assets/img/green_circle.svg";
+            var red_circle = "./assets/img/red_circle.svg";
+    
             // Recupère les coachs
             $.getJSON(
                     'http://localhost:4242/getCoaches/<?php echo $matiere;?>',                   
                     function (data) {
                         $.each(data, function (index, d) {
-                            var elemCoach = $('<div></div>').addClass('center-block').attr('id', d['pseudo']);
-                            elemCoach.append(''+d['prenom']+' '+d['nom']+'');
+                            var elemCoach = $('<div></div>').addClass('listCoach media').attr('id', d['pseudo']);
+                            var elemDivImage = $('<div></div>').addClass('media-left media-middle');
+                            var elemImage = $('<img>').addClass('media-object').attr('src','./memoire_tb_pereira/img/draft.png').attr('alt','Image de profil').attr('height',128).attr('width',128);
+                            var elemDivBody = $('<div></div>').addClass('media-body');
+                            elemDivImage.append(elemImage);
+                            elemDivBody.append('<h4>'+d['prenom']+' '+d['nom']+'</h4><br/>');
+                            elemDivBody.append('<span>Matières: '+d['matieres']+'</span><br/>');
+                            elemDivBody.append('<span>Canton: '+d['canton']+'</span><br/>');
+                            elemDivBody.append('Statut: <img src="'+((d['isOnline'] == true)?green_circle:red_circle) +'" alt="Statut connexion" height="20" width="20"><br/>');
+                            elemDivBody.append('<span>Tarif: '+d['tarif']+' CHF/Heure</span><br/>');
+                            elemDivBody.append('<button type="button" class="btn btn-primary">Prendre rendez-vous</button><br/>');
+                            elemCoach.append(elemDivImage);                            
+                            elemCoach.append(elemDivBody);
                             $('#divContainer').append(elemCoach);
                         });
                     }
