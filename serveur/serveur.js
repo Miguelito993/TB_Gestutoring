@@ -274,10 +274,17 @@ io.sockets.on('connection', function(socket, pseudo){
         console.log(util.inspect(waitingUsers, { showHidden: true, depth: null, colors: true}));
         if(waitingUsers[userInfo.myPartner] != null){
             setTimeout(function(){
-                socket.emit('find_partner', {partnerID: waitingUsers[userInfo.myPartner]['myID']});
+                socket.emit('find_partner', {partnerID: waitingUsers[userInfo.myPartner]['myID'], partnerName: userInfo.myPartner});
             },10000);          
         }
     });
+    
+    socket.on('close_socket',function(info){
+        delete waitingUsers[info.myPseudo];
+        delete waitingUsers[info.partnerPseudo];
+    });
+        
+    
 });
 
 server.listen(PORT, HOSTNAME, () => {

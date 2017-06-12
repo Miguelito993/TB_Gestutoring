@@ -25,7 +25,7 @@
         <!-- End Fixed navbar -->
 
         <div class="container">
-            <h2>PeerJS Video Chat</h2>
+            <h2 id="titleSession">PeerJS video chat</h2>
                         
             <div id="step4" class="div-chat"> 
                 <div id="chatbox" class="connection form-control"></div>
@@ -211,14 +211,16 @@
               // UI stuff
               window.existingCall = call;
               $('#their-id').text(call.peer);
-              call.on('close', cleanVars);
+              call.on('close', cleanVars);              
               $('#step1, #step2').hide();
               $('#step3, #step4, #video-container, #chatbox').show();
+              $('#titleSession').text("Session de chat avec "+partner);
               
             }
             
             function cleanVars(){
                 step2();
+                socket.emit('close_socket',{myPseudo: '<?php echo $_SESSION['pseudo']; ?>', partnerPseudo: partner});
                 socket.close(true);
                 partner = null;
                 infoExtra = null;
@@ -234,6 +236,7 @@
                  
             socket.on('find_partner', function(info){
                 var requestedPeer = info.partnerID;
+                partner = info.partnerName;
                         
                 // Initiate a call!
                 var call = peer.call(requestedPeer, window.localStream);
