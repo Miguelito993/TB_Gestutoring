@@ -27,7 +27,8 @@
         <div class="container">
             <h2>PeerJS Video Chat</h2>
                         
-            <div id="step4" class="div-chat">                
+            <div id="step4" class="div-chat"> 
+                <div id="chatbox" class="connection form-control"></div>
                 <form id="send">
                     <input type="text" id="text" placeholder="Votre message">
                     <input class="btn" type="submit" value="Envoyer">
@@ -98,7 +99,18 @@
             var peer = new Peer('<?php echo $_SESSION['_id']; ?>',{host: 'localhost', port: 4242, path: '/peerjs'});
             var socket = io.connect('http://localhost:4242');    
             var c;
-            var partner = ('<?php echo $_SESSION['pseudo']; ?>' == 'Alexterrieur')?'IronMan':'Alexterrieur';
+            var partner;
+            if('<?php echo $_SESSION['pseudo']; ?>' == 'Alexterrieur'){
+                partner = 'IronMan';
+            }else if('<?php echo $_SESSION['pseudo']; ?>' == 'IronMan'){
+                partner = 'Alexterrieur';
+            }else if('<?php echo $_SESSION['pseudo']; ?>' == 'Marvel'){
+                partner = 'Alainterrieur';
+            }else{
+                partner = 'Marvel';
+            }
+            //var partner = ('<?php echo $_SESSION['pseudo']; ?>' == 'Alexterrieur')?'IronMan':'Alexterrieur';
+            var infoExtra = null;
             
             peer.on('open', function(){                
                 $('#my-id').text(peer.id);
@@ -110,10 +122,20 @@
             peer.on('error', function(err){
                 console.log(err);
             });
+            
+            peer.on('disconnected', function(){
+                if(!peer.destroyed){
+                    cleanVars(); 
+                }
+            });
                              
             function connect(c){
-                if(c.label === 'chat'){
-                    var chatbox = $('<div></div>').addClass('connection').addClass('form-control').attr('id', c.peer);
+                if(c.label === 'info'){
+                    c.on('data', function(data){
+                        infoExtra = data;
+                    }); 
+                }else if(c.label === 'chat'){
+                    var chatbox = $('#chatbox');
                     var messages = $('<div><em>Peer connected</em></div>').addClass('messages');
                     chatbox.append(messages);
                     
@@ -123,15 +145,26 @@
                         messages.append('<div><span class="peer">' + partner + '</span>: ' + data + '</div>');
                     });
                 }else if (c.label === 'file') {
-                    c.on('data', function(data) {
+                    c.on('data', function(data) {  
+                      console.log(infoExtra.type);
+                                   
                       // If we're getting a file, create a URL for it.
                       if (data.constructor === ArrayBuffer) {
-                        var dataView = new Uint8Array(data);
-                        var dataBlob = new Blob([dataView]);
-                        var url = window.URL.createObjectURL(dataBlob);
-                        $('#'+ c.peer).find('.messages').append('<div><span class="file">' +
+                        var dataView = new Uint8Array(data);                        
+                        
+                        var typeText = infoExtra.type.split('/'); 
+                        var url;
+                        if(typeText[0] === 'image' || typeText[0] === 'text' || typeText[1] === 'pdf'){
+                            var dataFile = new File([dataView], infoExtra.name, {type: infoExtra.type, lastModified: infoExtra.lastModified});
+                            url = window.URL.createObjectURL(dataFile);
+                        }else{
+                            var dataBlob = new Blob([dataView]);
+                            url = window.URL.createObjectURL(dataBlob);
+                        }
+                        $('#chatbox').find('.messages').append('<div><span class="file">' +
                             partner + ' has sent you a <a target="_blank" href="' + url + '">file</a>.</span></div>');
                       }
+                      infoExtra = null;
                     });
                 }
             }
@@ -145,14 +178,9 @@
             peer.on('error', function(err){
               alert(err.message);
               // Return to step 2 if error occurs
-              step2();
+              cleanVars();
             });
-/*
-            // Click handlers setup
-            $(function(){
-              
-            });
-*/
+
             function step1 () {
               // Get audio/video stream
               navigator.getUserMedia({audio: true, video: true}, function(stream){
@@ -165,7 +193,7 @@
             }
 
             function step2 () {
-              $('#step1, #step3, #step4 #video-container').hide();
+              $('#step1, #step3, #step4, #video-container, #chatbox').hide();
               $('#step2').show();
             }
 
@@ -183,19 +211,30 @@
               // UI stuff
               window.existingCall = call;
               $('#their-id').text(call.peer);
-              call.on('close', step2);
+              call.on('close', cleanVars);
               $('#step1, #step2').hide();
-              $('#step3, #step4, #video-container').show();
+              $('#step3, #step4, #video-container, #chatbox').show();
               
+            }
+            
+            function cleanVars(){
+                step2();
+                socket.close(true);
+                partner = null;
+                infoExtra = null;
+                c = null; 
+                peer.destroy();
+                
+                console.log("Destroy peer");
+                console.log(peer);
+                //window.location.replace(index.php);
             }
             
             socket.emit('nouveau_client', {pseudo: '<?php echo $_SESSION['pseudo']; ?>', myID: '<?php echo $_SESSION['_id']; ?>', myPartner: partner});          
                  
             socket.on('find_partner', function(info){
                 var requestedPeer = info.partnerID;
-                                
-                //TODO: Établir communication ----------------------------------
-                
+                        
                 // Initiate a call!
                 var call = peer.call(requestedPeer, window.localStream);
                                 
@@ -212,18 +251,62 @@
                 
                 var f = peer.connect(requestedPeer, {
                     label: 'file',
-                    reliable: true
+                    reliable: true                    
                 });
                 f.on('open', function(){
                     connect(f);
                 });
-                f.on('error', function(err){ alert(err);});
-                // -------------------------------------------------------------
+                f.on('error', function(err){ alert(err);});                
+                
+                var i = peer.connect(requestedPeer, {
+                    label: 'info',
+                    serialization: 'json'                    
+                });
+                i.on('open', function(){
+                    connect(i);
+                });
+                i.on('error', function(err){ alert(err);});
 
                 step3(call);
             });
             
             $(document).ready(function() {
+                // Prepare file drop box.
+                var boxDrop = $('#chatbox');
+                boxDrop.on('dragenter', function(){
+                    $(this).css('border', '3px dashed red');                    
+                    return false;
+                });
+                boxDrop.on('dragover', function(e){
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $(this).css('border', '3px dashed red');                    
+                    return false;
+                });
+                boxDrop.on('dragleave', function(e){
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $(this).css('border', '');                    
+                    return false;
+                });
+               
+                boxDrop.on('drop', function(e){
+                    e.originalEvent.preventDefault();
+                    var file = e.originalEvent.dataTransfer.files[0];
+                   
+                    var infoFile = {type: file.type, name: file.name, lastModified: file.lastModified};
+                                        
+                    $(this).css('border', ''); 
+                    var theirId = $('#their-id').text();
+                    var conns = peer.connections[theirId];                             
+                                                            
+                    if (conns[2].label === 'file') {
+                      conns[3].send(infoFile);
+                      conns[2].send(file);
+                      $(this).find('.messages').append('<div><span class="file">You sent a file.</span></div>');
+                    }                 
+                });
+                                
                 $('#send').submit(function(e) {
                     e.preventDefault();
 
@@ -240,41 +323,10 @@
                     $('#text').val('');
                     $('#text').focus();
                 });
-/*
-                $('#make-call').click(function(){
-                var requestedPeer = $('#callto-id').val();
-                console.log(requestedPeer); 
-                 
-                // Initiate a call!
-                var call = peer.call(requestedPeer, window.localStream);
 
-                // Create 2 connections, one labelled chat and another labelled file
-                var c = peer.connect(requestedPeer, {
-                    label: 'chat',
-                    serialization: 'none',
-                    metadata: {message: 'I want to chat with you!'}
-                });
-                c.on('open', function(){
-                    connect(c);
-                });
-                c.on('error', function(err){ alert(err);});
-                
-                var f = peer.connect(requestedPeer, {
-                    label: 'file',
-                    reliable: true
-                });
-                f.on('open', function(){
-                    connect(f);
-                });
-                f.on('error', function(err){ alert(err);});
-                // -------------------------------------------------------------
-
-                step3(call);
-              });
-*/
               $('#end-call').click(function(){
                 window.existingCall.close();
-                c.close();
+                peer.destroy();
                 step2();
               });
 
