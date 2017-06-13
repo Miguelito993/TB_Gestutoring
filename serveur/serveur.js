@@ -22,104 +22,128 @@ var app = require('express')(),
         util = require('util'), // Afficher le contenu des objets
         bodyParser = require('body-parser'),
         ExpressPeerServer = require('peer').ExpressPeerServer; // Permet de récupérer les paramètres d'une requête POST
-        
+
 
 var storage = multer.diskStorage({
-    destination: function(req, file, callback){
+    destination: function (req, file, callback) {
         callback(null, './uploads');
     },
-    filename: function(req, file, callback){       
+    filename: function (req, file, callback) {
         var user = parseUserInfo(req.body);
-               
+
         MongoClient.connect(urlDB, function (err, db) {
             assert.equal(err, null);
-            
+
             // Impose un timer dans le cas où l'utilisateur charge plusieurs diplômes à faire valider
-            setTimeout(checkLogin(db, {pseudo: user.pseudo, password: user.pwd}, function(docs){
-                if(docs[0] == null){                   
-                   // Ajouter le nouvel utilisateur avec le nouveau diplome
-                   insertUser(db, user); 
-                }else{
-                   // Insérer le diplôme avec l'identifiant de l'utilisateur récupéré
-                   user.id = docs[0]._id;
-                   addDiplome(db, user);
-                }  
+            setTimeout(checkLogin(db, {pseudo: user.pseudo, password: user.pwd}, function (docs) {
+                if (docs[0] == null) {
+                    // Ajouter le nouvel utilisateur avec le nouveau diplome
+                    insertUser(db, user);
+                } else {
+                    // Insérer le diplôme avec l'identifiant de l'utilisateur récupéré
+                    user.id = docs[0]._id;
+                    addDiplome(db, user);
+                }
                 db.close();
-            }), 1000);        
-         });
-       
+            }), 1000);
+        });
+
         callback(null, user.diplomes);
     }
 });
 
 var upload = multer({storage: storage}).any();
 
-function parseUserInfo(body){    
-    var user = {        
-            firstname : ent.encode(body.inputFirstname),
-            name : ent.encode(body.inputName),
-            email : ent.encode(body.inputEmail),
-            pseudo : ent.encode(body.inputPseudo),
-            pwd : ent.encode(body.inputPassword),
-            city : body.inputCity,
-            soldes : 0,
-            type : body.inputType,
-            isOnline : false,
-            imgProfil : null,
-            emailParent : (body.inputType === "Student")?ent.encode(body.inputEmailParent):null,
-            diplomes : (body.inputType === "Coach")?'dipl_' + ent.encode(body.inputPseudo) + '_' + Date.now() + '.pdf':null,        
-            tarif : (body.inputType === "Coach")?ent.encode(body.inputTarif):null,
-            isValid : (body.inputType === "Coach")?false:true,
-            matieres : (body.inputType === "Coach")?body.inputMatiere:null
-        }    
+function parseUserInfo(body) {
+    var user = {
+        firstname: ent.encode(body.inputFirstname),
+        name: ent.encode(body.inputName),
+        email: ent.encode(body.inputEmail),
+        pseudo: ent.encode(body.inputPseudo),
+        pwd: ent.encode(body.inputPassword),
+        city: body.inputCity,
+        soldes: 0,
+        type: body.inputType,
+        isOnline: false,
+        imgProfil: null,
+        emailParent: (body.inputType === "Student") ? ent.encode(body.inputEmailParent) : null,
+        diplomes: (body.inputType === "Coach") ? 'dipl_' + ent.encode(body.inputPseudo) + '_' + Date.now() + '.pdf' : null,
+        tarif: (body.inputType === "Coach") ? ent.encode(body.inputTarif) : null,
+        isValid: (body.inputType === "Coach") ? false : true,
+        matieres: (body.inputType === "Coach") ? body.inputMatiere : null
+    }
     return user;
+}
+
+function doAverageNotation(tabNota) {
+    var notation = 0
+    for (var i = 0; i < tabNota.length; i++) {
+        notation += tabNota[i].notation;
+    }    
+    return (notation /= tabNota.length);
 }
 
 var getDepartments = function (db, callback) {
     var collection = db.collection('t_departments');
 
-    collection.find({}).toArray(function (err, docs) {
-        assert.equal(err, null);
-        callback(docs);
-    });
+    collection.find({}).toArray(
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            });
 }
 
 var getMatieres = function (db, callback) {
     var collection = db.collection('t_matieres');
 
-    collection.find({}, {name: 1}).toArray(function (err, docs) {
-        assert.equal(err, null);
-        callback(docs);
-    });
+    collection.find({}, {name: 1}).toArray(
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            });
 }
 
 var checkLogin = function (db, user, callback) {
     var collection = db.collection('t_users');
-    
-    collection.find({pseudo: user.pseudo, password: user.password}).toArray(function (err, docs) {
-        assert.equal(err, null);       
-        callback(docs);
-    });
+
+    collection.find({pseudo: user.pseudo, password: user.password}).toArray(
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            });
 }
 
 var changeStatus = function (db, info, callback) {
     var collection = db.collection('t_users');
-        
-    collection.update({ _id: ObjectId(info.id) }, { $set: {isOnline: (info.statusOnline == 'true')} }, 
-        function(err, docs) {
-            assert.equal(err, null);
-            callback(docs);
-        }
+
+    collection.update({_id: ObjectId(info.id)}, {$set: {isOnline: (info.statusOnline == 'true')}},
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            }
     );
 }
 
 var getCoaches = function (db, matiere, callback) {
     var collection = db.collection('t_users');
 
-    collection.find({type: "Coach", isValid : true, matieres: matiere}).toArray(function (err, docs) {
-        assert.equal(err, null);
-        callback(docs);
-    });
+    collection.find({type: "Coach", isValid: true, matieres: matiere}).toArray(
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            }
+    );
+}
+
+var getNotation = function (db, info, callback) {
+    var collection = db.collection('t_notations');
+
+    collection.find({id_user: ObjectId(info.id)}, {notation: 1}).toArray(
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            }
+    );
 }
 
 var insertUser = function (db, user) {
@@ -135,24 +159,24 @@ var insertUser = function (db, user) {
         soldes: user.soldes,
         type: user.type,
         emailParent: user.emailParent,
-        diplomes: [ user.diplomes ],
+        diplomes: [user.diplomes],
         tarif: user.tarif,
         img_profil: user.imgProfil,
         isValid: user.isValid,
         isOnline: user.isOnline,
-        matieres: user.matieres    
+        matieres: user.matieres
     }, function (err) {
-        assert.equal(err, null);       
+        assert.equal(err, null);
     });
 }
 
 var addDiplome = function (db, user) {
     var collection = db.collection('t_users');
-        
-    collection.update({ "_id": ObjectId(user.id) }, { $push: {"diplomes" : user.diplomes} }, 
-        function(err) {
-            assert.equal(err, null);            
-        }
+
+    collection.update({"_id": ObjectId(user.id)}, {$push: {"diplomes": user.diplomes}},
+            function (err) {
+                assert.equal(err, null);
+            }
     );
 }
 
@@ -190,62 +214,62 @@ app.get('/getMatieres', function (req, res) {
 });
 
 app.post('/checkLogin', function (req, res) {
-    var user = {"pseudo": req.body.pseudo, "password": req.body.pwd };
-            
-    MongoClient.connect(urlDB, function (err, db) {
-       assert.equal(err, null);
+    var user = {"pseudo": req.body.pseudo, "password": req.body.pwd};
 
-       checkLogin(db, user, function(docs){             
-        if(docs[0] != null){  
-            res.jsonp({status: 'Success', docs});
-        }else{ 
-            res.jsonp({status: 'Failed'});
-        }           
-        
-        db.close();
-       });        
+    MongoClient.connect(urlDB, function (err, db) {
+        assert.equal(err, null);
+
+        checkLogin(db, user, function (docs) {
+            if (docs[0] != null) {
+                res.jsonp({status: 'Success', docs});
+            } else {
+                res.jsonp({status: 'Failed'});
+            }
+
+            db.close();
+        });
     });
 });
 
-app.post('/changeStatus', function (req, res) {    
-    var info = {"id": req.body.id, "statusOnline": req.body.statusOnline };
-        
-    if((info.id != null) && (info.statusOnline != null)){
-        MongoClient.connect(urlDB, function (err, db) {
-           assert.equal(err, null);
+app.post('/changeStatus', function (req, res) {
+    var info = {"id": req.body.id, "statusOnline": req.body.statusOnline};
 
-            changeStatus(db, info, function(docs){                
+    if ((info.id != null) && (info.statusOnline != null)) {
+        MongoClient.connect(urlDB, function (err, db) {
+            assert.equal(err, null);
+
+            changeStatus(db, info, function (docs) {
                 res.jsonp(docs);
                 db.close();
-           });        
+            });
         });
     }
 });
 
-app.post('/submitInscription',function(req, res){    
-    upload(req, res, function(err){
-        if(req.body.inputType == "Student"){
+app.post('/submitInscription', function (req, res) {
+    upload(req, res, function (err) {
+        if (req.body.inputType == "Student") {
             var user = parseUserInfo(req.body);
             MongoClient.connect(urlDB, function (err, db) {
                 assert.equal(err, null);
 
-                 insertUser(db, user, function(docs){                
-                     res.jsonp(docs);
-                     db.close();
-                });        
-             });
+                insertUser(db, user, function (docs) {
+                    res.jsonp(docs);
+                    db.close();
+                });
+            });
         }
-        if(err){
+        if (err) {
             return res.send(err);
         }
         res.send("Inscription is done");
-    });   
+    });
 });
 
-app.get('/getCoaches/:matiere', function (req, res) {    
+app.get('/getCoaches/:matiere', function (req, res) {
     res.setHeader('Content-Type', 'text/plain');
-    
-    var param = req.params.matiere; 
+
+    var param = req.params.matiere;
 
     MongoClient.connect(urlDB, function (err, db) {
         assert.equal(err, null);
@@ -257,6 +281,21 @@ app.get('/getCoaches/:matiere', function (req, res) {
     });
 });
 
+app.post('/getNotation', function (req, res) {
+    var info = {"id": req.body.id_user};
+
+    if (info.id != null) {
+        MongoClient.connect(urlDB, function (err, db) {
+            assert.equal(err, null);
+
+            getNotation(db, info, function (docs) {                
+                res.jsonp(doAverageNotation(docs));
+                db.close();
+            });
+        });
+    }
+});
+
 app.use('/peerjs', ExpressPeerServer(server, {debug: true}));
 
 app.use(function (req, res, next) {
@@ -264,27 +303,27 @@ app.use(function (req, res, next) {
     res.status(404).send('Page introuvable !\n');
 });
 
-io.sockets.on('connection', function(socket, pseudo){
-    
-    socket.on('nouveau_client', function(userInfo){
+io.sockets.on('connection', function (socket, pseudo) {
+
+    socket.on('nouveau_client', function (userInfo) {
         socket.pseudo = userInfo.pseudo;
         waitingUsers[socket.pseudo] = {};
         waitingUsers[socket.pseudo]['myID'] = userInfo.myID;
         waitingUsers[socket.pseudo]['myPartner'] = userInfo.myPartner;
-        console.log(util.inspect(waitingUsers, { showHidden: true, depth: null, colors: true}));
-        if(waitingUsers[userInfo.myPartner] != null){
-            setTimeout(function(){
+        console.log(util.inspect(waitingUsers, {showHidden: true, depth: null, colors: true}));
+        if (waitingUsers[userInfo.myPartner] != null) {
+            setTimeout(function () {
                 socket.emit('find_partner', {partnerID: waitingUsers[userInfo.myPartner]['myID'], partnerName: userInfo.myPartner});
-            },10000);          
+            }, 10000);
         }
     });
-    
-    socket.on('close_socket',function(info){
+
+    socket.on('close_socket', function (info) {
         delete waitingUsers[info.myPseudo];
         delete waitingUsers[info.partnerPseudo];
     });
-        
-    
+
+
 });
 
 server.listen(PORT, HOSTNAME, () => {

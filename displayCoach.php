@@ -55,8 +55,19 @@ $matiere = $_POST['inputSearch'];
             $.getJSON(
                     'http://localhost:4242/getCoaches/<?php echo $matiere;?>',                   
                     function (data) {
+                        //console.log(data); 
                         $.each(data, function (index, d) {
-                            var elemCoach = $('<div></div>').addClass('listCoach media').attr('id', d['pseudo']);
+                            $.post('http://localhost:4242/getNotation', {
+                                id_user: d['_id']                            
+                            },
+                                function (dataNotation) {
+                                    d['notation'] = dataNotation;                                                                     
+                                }
+                            );
+                            
+                            console.log(d);
+                            
+                            var elemCoach = $('<div></div>').addClass('listCoach media container-fluid').attr('id', d['pseudo']);
                             var elemDivImage = $('<div></div>').addClass('media-left media-middle');
                             var elemImage = $('<img>').addClass('media-object').attr('src','./memoire_tb_pereira/img/draft.png').attr('alt','Image de profil').attr('height',128).attr('width',128);
                             var elemDivBody = $('<div></div>').addClass('media-body');
