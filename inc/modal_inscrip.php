@@ -89,7 +89,7 @@
                     </div>
 
                     <div id="divMatiere" class="form-group" hidden>
-                        <label for="inputMatiere" class="col-sm-2 control-label">Matières d'enseignements <span id="infoPopOver" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" title="Info" data-trigger="hover" data-content="Veuillez utiliser la touche 'Ctrl' pour sélectionner plusieurs matières"></span></label>
+                        <label for="inputMatiere" class="col-sm-2 control-label">Matières d'enseignements <span id="infoPopOver" class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="popover" title="Informations" data-trigger="hover" data-html="true" data-content="Veuillez utiliser la touche <kbd>Ctrl</kbd> pour sélectionner plusieurs matières"></span></label>
                         <div class="col-sm-8">
                             <select multiple class="form-control" id="inputMatiere" name="inputMatiere">
                                 <!-- Formulaire rempli à l'aide de JQuery -->
