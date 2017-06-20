@@ -89,10 +89,10 @@ jQuery(document).ready(function ($) {
             cache: false,
             success: function (data) {
                 console.log("Success: ", data);
-                $('#alertPopUp').attr('class', 'alert alert-success');
-                $('#alertPopUp').attr('role', 'alert');
-                $('#alertPopUp').empty();
-                $('#alertPopUp').append("Inscription validé");
+                $('#alertPopUpInscrip').attr('class', 'alert alert-success');
+                $('#alertPopUpInscrip').attr('role', 'alert');
+                $('#alertPopUpInscrip').empty();
+                $('#alertPopUpInscrip').append("Inscription validé");
 
                 setTimeout(function () {
                     $('#myInscription').modal('hide');
@@ -110,8 +110,8 @@ jQuery(document).ready(function ($) {
                     .end();                    
 
             $('#submitInscription').attr('value', 'Inscription');
-            $('#alertPopUp').removeAttr('class');
-            $('#alertPopUp').empty();
+            $('#alertPopUpInscrip').removeAttr('class');
+            $('#alertPopUpInscrip').empty();
         });
     });
 });

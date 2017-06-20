@@ -150,8 +150,8 @@ var getNotation = function (db, info, callback) {
 
 var getPlanning = function (db, info, callback) {
     var collection = db.collection('t_meetings');
-    console.log(util.inspect(info, {showHidden: true, depth: null, colors: true}));
-    
+    //console.log(util.inspect(info, {showHidden: true, depth: null, colors: true}));
+
     collection.aggregate([
         {$match: {id_coach: ObjectId(info.id_coach)}},
         {$match: {date: {$lt: new Date(info.dateLimit), $gt: new Date(info.dateNow)}}},
@@ -162,6 +162,36 @@ var getPlanning = function (db, info, callback) {
             callback(docs);
         }
     );
+}
+
+var getAllPlanning = function (db, info, callback) {
+    var collection = db.collection('t_meetings');
+    
+    collection.aggregate([
+        {$match: {id_coach: ObjectId(info.id_coach)}},
+        {$match: {date: {$gt: new Date(info.dateNow)}}},
+        {$sort: {day: 1}}
+    ]).toArray(
+        function (err, docs) {
+            assert.equal(err, null);
+            callback(docs);
+        }
+    );
+}
+
+var submitMeeting = function (db, info, callback) {
+    var collection = db.collection('t_meetings');
+
+    collection.insertOne({
+        date: new Date(info.date),
+        isFree: (info.isFree == 'true')?true:false,
+        duration: parseInt(info.duration),
+        id_coach: ObjectId(info.id_coach),
+        id_student: (info.id_student == '')?null:ObjectId(info.id_student)        
+    }, function (err, docs) {
+        assert.equal(err, null);
+        callback(docs);
+    });
 }
 
 var insertUser = function (db, user) {
@@ -321,13 +351,34 @@ app.post('/getPlanning', function (req, res) {
         MongoClient.connect(urlDB, function (err, db) {
             assert.equal(err, null);
 
-            getPlanning(db, info, function (docs) {   
+            if (info.dateLimit != null) {
+                getPlanning(db, info, function (docs) {
+                    res.jsonp(docs);
+                    db.close();
+                });
+            } else {
+                getAllPlanning(db, info, function (docs) {
+                    res.jsonp(docs);
+                    db.close();
+                });
+            }
+        });
+    }
+});
+
+app.post('/submitMeeting', function (req, res) {
+    var info = {"id_coach": req.body.id_coach, "date": req.body.date, "isFree": req.body.isFree, "duration": req.body.duration, "id_student": req.body.id_student};
+   
+    if ((info.id_coach != null) && (info.date != null)) {
+        MongoClient.connect(urlDB, function (err, db) {
+            assert.equal(err, null);
+
+            submitMeeting(db, info, function (docs) {                
                 res.jsonp(docs);
                 db.close();
             });
         });
     }
-
 });
 
 app.use('/peerjs', ExpressPeerServer(server, {debug: true}));
