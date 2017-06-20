@@ -104,10 +104,10 @@
                 partner = 'IronMan';
             }else if('<?php echo $_SESSION['pseudo']; ?>' == 'IronMan'){
                 partner = 'Alexterrieur';
-            }else if('<?php echo $_SESSION['pseudo']; ?>' == 'Marvel'){
+            }else if('<?php echo $_SESSION['pseudo']; ?>' == 'Thor'){
                 partner = 'Alainterrieur';
             }else{
-                partner = 'Marvel';
+                partner = 'Thor';
             }
             //var partner = ('<?php echo $_SESSION['pseudo']; ?>' == 'Alexterrieur')?'IronMan':'Alexterrieur';
             var infoExtra = null;
