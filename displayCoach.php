@@ -31,6 +31,7 @@ $matiere = $_POST['inputSearch'];
         <!-- End Fixed navbar -->
 
         <div id="divContainer" class="container">
+            <div id="alertPopUp" role="alert"></div>
             <h2 class="text-center">Résultats pour: <?php echo $matiere; ?></h2> 
 
 
@@ -38,7 +39,7 @@ $matiere = $_POST['inputSearch'];
 
         <!-- Modal -->
         <?php
-        include './inc/modal_inscrip.php';
+            include './inc/modal_inscrip.php';
         ?>
         <!-- /Modal -->
 
@@ -60,10 +61,7 @@ $matiere = $_POST['inputSearch'];
             var dateLimitRef = new Date(date);
             dateLimitRef.setDate(date.getDate() + 6);
 
-            dateLoop = new Date(date);
-
-            console.log(date.toISOString());
-            console.log(dateLimitRef.toISOString());
+            dateLoop = new Date(date);            
 
             // Recupère les coachs
             $.getJSON(

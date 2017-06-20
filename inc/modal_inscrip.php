@@ -7,7 +7,7 @@
             </div>
             <form method="post" enctype="multipart/form-data" id="inscripForm" class="form-horizontal">  
                 <div class="modal-body">
-                    <div id="alertPopUp" role="alert">
+                    <div id="alertPopUpInscrip" role="alert">
                     </div>   
 
                     <div class="form-group">
