@@ -1,5 +1,5 @@
 <?php
-session_start();
+    session_start();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -25,6 +25,7 @@ session_start();
         <!-- End Fixed navbar -->
 
         <div class="container-fluid">
+            <div id="alertPopUp" role="alert"></div>
             <h2 class="text-center">Recherchez des répétiteurs:</h2> 
             <form method="post" id="searchCoach" class="form-horizontal" action="displayCoach.php">               
                 <div class="form-group">
@@ -34,8 +35,14 @@ session_start();
                     </div>
                     <input type="submit" id="submitSearch" name="submitSearch" class="btn btn-primary" value="Rechercher"/>
                 </div>
-            </form>            
-
+            </form>
+               
+            <span id="IronMan_Je" data-container="body" data-toggle="pop_over" data-trigger="hover" data-placement="bottom">Je</span> 
+            <span id="IronMan_Ve" data-container="body" data-toggle="pop_over" data-trigger="hover" data-placement="bottom">Ve</span> 
+            <span id="IronMan_Sa" data-container="body" data-toggle="pop_over" data-trigger="hover" data-placement="bottom">Di</span> 
+            <span id="IronMan_Di" data-container="body" data-toggle="pop_over" data-trigger="hover" data-placement="bottom">Lu</span>
+            <span id="IronMan_Lu" data-container="body" data-toggle="pop_over" data-trigger="hover" data-placement="bottom">Ma</span> 
+            <span id="IronMan_Ma" data-container="body" data-toggle="pop_over" data-trigger="hover" data-placement="bottom">Me</span> 
         </div> <!-- /container -->
 
         <!-- Modal -->
@@ -49,7 +56,7 @@ session_start();
         <script src="./bootstrap/js/bootstrap.js"></script>
         <script src="./assets/js/connexion.js"></script>
         <script src="./assets/js/inscription.js"></script>
-        <script>
+        <script type="text/javascript">
             var subject = [];
 
             // Rempli le formulaire des matières
@@ -65,7 +72,8 @@ session_start();
             $('#inputSearch').autocomplete({
                 source: subject
             });
-
+            
+            $('[data-toggle="pop_over"]').popover({html: true, content: "Un <strong>exemple</strong>"});
             
         </script>
     </body>
