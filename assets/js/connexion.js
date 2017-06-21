@@ -6,9 +6,9 @@ jQuery(document).ready(function ($) {
         $.post(
                 'http://localhost:4242/checkLogin',
                 {
-                    pseudo: $('#inputPseudo').val(),
-                    pwd: $('#inputPassword').val()
-                            //TODO: Prévoir une méthode pour chiffrer le mot de passe (autre que CryptoJS)
+                    pseudo: $('#inputLogPseudo').val(),
+                    pwd: $('#inputLogPassword').val()
+                    //TODO: Chiffrer le mot de passe avec sha1 (exemple dans le fichier inscription.js)
                 }
         ,
                 function (data) {

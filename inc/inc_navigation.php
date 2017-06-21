@@ -19,10 +19,10 @@
                 if (!isset($_SESSION['pseudo'])) {
                     echo '<li><form id="connexForm" class="navbar-form">
                         <div class="form-group">
-                            <input type="text" id="inputPseudo" class="form-control" placeholder="Pseudo" required> 
+                            <input type="text" id="inputLogPseudo" class="form-control" placeholder="Pseudo" required> 
                         </div>
                         <div class="form-group">
-                            <input type="password" id="inputPassword" class="form-control" placeholder="Mot de passe" required>
+                            <input type="password" id="inputLogPassword" class="form-control" placeholder="Mot de passe" required>
                         </div>
                         <button type="submit" id="submitConnexion" class="btn btn-default">Connexion</button>
                       </form></li>

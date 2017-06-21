@@ -72,6 +72,11 @@ jQuery(document).ready(function ($) {
         // On désactive le comportement par défaut du navigateur
         e.preventDefault();
 
+        // Chiffrement du mot de passe avec sha1
+        $('#inputPassword').val(sha1($('#inputPassword').val()));
+        $('#inputPassword2').val(sha1($('#inputPassword2').val()));
+       
+        
         var form = $('#inscripForm')[0];
         var data = new FormData(form);
 
