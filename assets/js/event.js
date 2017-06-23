@@ -7,7 +7,6 @@ function transformDateStartToEnd(dateStart, duration) {
 var tabEvents = [];
 
 jQuery(document).ready(function ($) {
-
     $('#eventForm').submit(function (e) {
         // On désactive le comportement par défaut du navigateur
         e.preventDefault();

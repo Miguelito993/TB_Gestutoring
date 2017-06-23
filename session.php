@@ -40,11 +40,13 @@
               <video id="their-video" width="450" height="280" class="embed-responsive-item peer-video" crossorigin="anonymous" autoplay></video>
               <video id="my-video" width="250" height="150" class="embed-responsive-item my-video" crossorigin="anonymous" muted="true" autoplay></video>
             </div>
-            
-            
+            <?php
+                if($_SESSION['type'] == 'Coach'){
+                    echo '<button type="button" id="searchData" class="btn btn-info" data-toggle="modal" data-target="#myDatas">Recherche de contenu</button>';
+                }
+            ?>
             <!-- Steps -->
-            <div>
-              
+            <div>              
               <!-- Get local audio/video stream -->
               <div id="step1">
                 <p>Please click `allow` on the top of the screen so we can access your webcam and microphone for calls.</p>
@@ -76,7 +78,7 @@
        
         <!-- Modal -->
         <?php
-            include './inc/modal_inscrip.php';
+            include './inc/modal_datas.php';
         ?>
         <!-- /Modal -->
            
@@ -87,11 +89,9 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.1/socket.io.js"></script>
         
         <!-- Include internal JS libs. -->
-        <script src="./bootstrap/js/bootstrap.js"></script> 
-        <script src="./assets/js/connexion.js"></script>
-        <script src="./assets/js/inscription.js"></script>
-        <script>
-            
+        <script src="./bootstrap/js/bootstrap.js"></script>
+        <script src="./assets/js/datas.js"></script>
+        <script>            
             // Compatibility shim
             navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
             
@@ -100,6 +100,7 @@
             var socket = io.connect('http://localhost:4242');    
             var c;
             var partner;
+            var matiere = "Mathématiques"
             if('<?php echo $_SESSION['pseudo']; ?>' == 'Alexterrieur'){
                 partner = 'IronMan';
             }else if('<?php echo $_SESSION['pseudo']; ?>' == 'IronMan'){
@@ -162,7 +163,7 @@
                             url = window.URL.createObjectURL(dataBlob);
                         }
                         $('#chatbox').find('.messages').append('<div><span class="file">' +
-                            partner + ' has sent you a <a target="_blank" href="' + url + '">file</a>.</span></div>');
+                            partner + ' vous a envoyé un <a target="_blank" href="' + url + '">fichier</a>.</span></div>');
                       }
                       infoExtra = null;
                     });
@@ -306,7 +307,7 @@
                     if (conns[2].label === 'file') {
                       conns[3].send(infoFile);
                       conns[2].send(file);
-                      $(this).find('.messages').append('<div><span class="file">You sent a file.</span></div>');
+                      $(this).find('.messages').append('<div><span class="file">Vous avez envoyé un fichier</span></div>');
                     }                 
                 });
                                 

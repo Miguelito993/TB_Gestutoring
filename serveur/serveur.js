@@ -21,6 +21,8 @@ var app = require('express')(),
     assert = require('assert'),
     util = require('util'), // Afficher le contenu des objets
     bodyParser = require('body-parser'),
+    path = require('path'),
+    fs = require('fs'),
     ExpressPeerServer = require('peer').ExpressPeerServer; // Permet de récupérer les paramètres d'une requête POST
 
 
@@ -95,14 +97,22 @@ var getDepartments = function (db, callback) {
         });
 }
 
-var getMatieres = function (db, callback) {
+var getMatieres = function (db, matiere, callback) {
     var collection = db.collection('t_matieres');
 
-    collection.find({}, {name: 1}).toArray(
-        function (err, docs) {
-            assert.equal(err, null);
-            callback(docs);
-        });
+    if (matiere === null) {
+        collection.find({}, {name: 1}).toArray(
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            });
+    } else {
+        collection.find({name: matiere}).toArray(
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            });
+    }
 }
 
 var checkLogin = function (db, user, callback) {
@@ -166,7 +176,7 @@ var getPlanning = function (db, info, callback) {
 
 var getAllPlanning = function (db, info, callback) {
     var collection = db.collection('t_meetings');
-    
+
     collection.aggregate([
         {$match: {id_coach: ObjectId(info.id_coach)}},
         {$match: {date: {$gt: new Date(info.dateNow)}}},
@@ -184,15 +194,38 @@ var submitMeeting = function (db, info, callback) {
 
     collection.insertOne({
         date: new Date(info.date),
-        isFree: (info.isFree == 'true')?true:false,
+        isFree: (info.isFree == 'true') ? true : false,
         duration: parseInt(info.duration),
         id_coach: ObjectId(info.id_coach),
-        id_student: (info.id_student == '')?null:ObjectId(info.id_student)        
+        id_student: (info.id_student == '') ? null : ObjectId(info.id_student)
     }, function (err, docs) {
         assert.equal(err, null);
         callback(docs);
     });
 }
+
+var getDataList = function (db, info, callback) {
+    var collection = db.collection('t_datas');
+
+    collection.find({id_matiere: ObjectId(info.idMatiere)}).toArray(
+        function (err, docs) {
+            assert.equal(err, null);
+            callback(docs);
+        }
+    );
+}
+
+var getIdCoachByPseudo = function (db, info, callback) {
+    var collection = db.collection('t_users');
+
+    collection.find({pseudo: info.pseudo}, {_id: 1}).toArray(
+        function (err, docs) {
+            assert.equal(err, null);
+            callback(docs);
+        }
+    );
+}
+
 
 var insertUser = function (db, user) {
     var collection = db.collection('t_users');
@@ -254,7 +287,7 @@ app.get('/getMatieres', function (req, res) {
     MongoClient.connect(urlDB, function (err, db) {
         assert.equal(err, null);
 
-        getMatieres(db, function (docs) {
+        getMatieres(db, null, function (docs) {
             res.jsonp(docs);
             db.close();
         });
@@ -368,17 +401,70 @@ app.post('/getPlanning', function (req, res) {
 
 app.post('/submitMeeting', function (req, res) {
     var info = {"id_coach": req.body.id_coach, "date": req.body.date, "isFree": req.body.isFree, "duration": req.body.duration, "id_student": req.body.id_student};
-   
+
     if ((info.id_coach != null) && (info.date != null)) {
         MongoClient.connect(urlDB, function (err, db) {
             assert.equal(err, null);
 
-            submitMeeting(db, info, function (docs) {                
+            submitMeeting(db, info, function (docs) {
                 res.jsonp(docs);
                 db.close();
             });
         });
     }
+});
+
+app.get('/getDataList/:matiere/:idCoach', function (req, res) {
+    //res.setHeader('Content-Type', 'text/plain');
+
+    var param = req.params.matiere;
+    var info = {idCoach: req.params.idCoach};
+    var dataList = [];
+
+    MongoClient.connect(urlDB, function (err, db) {
+        assert.equal(err, null);
+
+        getMatieres(db, param, function (docs) {            
+            info.idMatiere = docs[0]._id;            
+            getDataList(db, info, function (result) { 
+                for(var i = 0; i < result.length; i++){
+                    if(result[i].access === 'public'){
+                        dataList.push(result[i]);
+                    }else{                        
+                        if(result[i].id_user.toString() === info.idCoach){
+                            dataList.push(result[i]);
+                        }
+                    }
+                }
+                //console.log(util.inspect(dataList, {showHidden: true, depth: null, colors: true}));
+                /*
+                var file = fs.createReadStream(__dirname+'/datas/'+dataList[0]['data']);
+                var writableStream = fs.createWriteStream('file2.txt');
+                var stat = fs.statSync(__dirname+'/datas/'+dataList[0]['data']);
+                res.setHeader('Content-Length', stat.size);
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', 'attachment; filename=exemple.pdf');
+                file.pipe(writableStream);
+                */
+                //res.sendFile(__dirname+'/datas/'+dataList[0]['data']);
+                res.jsonp(dataList);
+                db.close();
+            });
+        });
+    });
+});
+
+app.get('/getIdCoachByPseudo/:pseudo', function (req, res) {
+    var param = req.params.pseudo;
+
+    MongoClient.connect(urlDB, function (err, db) {
+        assert.equal(err, null);
+
+        getIdCoachByPseudo(db, param, function (docs) {
+            res.jsonp(docs);
+            db.close();
+        });
+    });
 });
 
 app.use('/peerjs', ExpressPeerServer(server, {debug: true}));
