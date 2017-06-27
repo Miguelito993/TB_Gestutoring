@@ -50,7 +50,7 @@ if (!isset($_SESSION['pseudo'])) {
         <script src="./assets/js/fullcalendar.min.js"></script>
         <script src="./assets/js/locale-all.js"></script>
         <script src="./bootstrap/js/bootstrap.js"></script>
-        <script src="./assets/js/event.js"></script>
+        <script src="./assets/js/calendar.js"></script>
 
         <script type="text/javascript">
 
@@ -76,24 +76,8 @@ if (!isset($_SESSION['pseudo'])) {
 
             var myID = "<?php echo $_SESSION['_id'] ?>";
 
-            $.post('http://localhost:4242/getPlanning', {
-                id_coach: myID,
-                dateNow: date.toISOString()
-            },
-                function (data) {
-                    $.each(data, function (index, d) {
-                        var myTitle = ((d['isFree'] == true) ? "Libre" : d['id_student']);
-                        var myStart = new Date(d['date']);
-                        var myEnd = transformDateStartToEnd(myStart, d['duration']);
-
-                        tabEvents.push({title: myTitle, start: myStart, end: myEnd});
-                    });
-
-                    $('#calendar').fullCalendar('addEventSource', tabEvents);
-                    //tabEvents = [];
-                }
-            );          
-
+            tabEvents = getPlanningWithIdCoachAndDate(tabEvents, myID, date.toISOString(), true);
+            
             jQuery(document).ready(function ($) {
                 $('#calendar').fullCalendar({
                     locale: 'fr',
@@ -113,42 +97,52 @@ if (!isset($_SESSION['pseudo'])) {
 
                     eventSources: [],
                     dayClick: function (date, jsEvent, view) {
+                        if (date.isBefore(moment().subtract(1, 'days'))) {
+                            $('#calendar').fullCalendar('unselect');
+                            alert('Date non sélectionnable');
+                            return false;
+                        } else {
+                            $('#myEvent').modal('show');
+                            $('#inputDate').val(date.format());
+                            $('#idCoach').val(myID);
 
-                        $('#myEvent').modal('show');
-                        $('#inputDate').val(date.format());
-                        $('#idCoach').val(myID);
+                            var tabHours = checkTabHoursByDay(tabEvents, date.format());
+                            var decalage = false;
 
-                        var tabHours = checkTabHoursByDay(tabEvents, date.format());
-                        var decalage = false;
-
-                        for (var i = 0; i < tabHours.length; i++) {
-                            if (tabHours[i] != null) {
-                                if (tabHours[i] != false) {
-                                    if (tabHours[i][0] == true) {
-                                        $('#inputHeure').append("<option disabled>" + i + "h00</option>");
-                                        $('#inputHeure').append("<option disabled>" + i + "h30</option>");
+                            if ($('#inputHeure').val() != null) {
+                                $('#inputHeure').html('');
+                            }
+                            
+                            for (var i = 0; i < tabHours.length; i++) {
+                                if (tabHours[i] != null) {                                    
+                                    if (tabHours[i] != false) {
+                                        if (tabHours[i][0] == true) {
+                                            $('#inputHeure').append("<option disabled>" + i + "h00</option>");
+                                            $('#inputHeure').append("<option disabled>" + i + "h30</option>");
+                                        } else {
+                                            $('#inputHeure').append("<option>" + i + "h00</option>");
+                                            $('#inputHeure').append("<option disabled>" + i + "h30</option>");
+                                            $('#inputHeure').append("<option disabled>" + (i + 1) + "h00</option>");
+                                            decalage = true; // On créer cette variable pour éviter de mettre deux fois la même heure
+                                        }
                                     } else {
-                                        $('#inputHeure').append("<option>" + i + "h00</option>");
-                                        $('#inputHeure').append("<option disabled>" + i + "h30</option>");
-                                        $('#inputHeure').append("<option disabled>" + (i + 1) + "h00</option>");
-                                        decalage = true; // On créer cette variable pour éviter de mettre deux fois la même heure
+                                        if (!decalage) {
+                                            $('#inputHeure').append("<option>" + i + "h00</option>");
+                                        } else {
+                                            decalage = false;
+                                        }
+                                        $('#inputHeure').append("<option>" + i + "h30</option>");
                                     }
-                                } else {
-                                    if (!decalage) {
-                                        $('#inputHeure').append("<option>" + i + "h00</option>");
-                                    } else {
-                                        decalage = false;
-                                    }
-                                    $('#inputHeure').append("<option>" + i + "h30</option>");
                                 }
                             }
 
                         }
-
-                        //$(this).css('background-color', 'red');
                     },
                     eventClick: function (calEvent, jsEvent, view) {
                         // TODO: Possiblité de modifier les informations d'un événement                    
+                        console.log(calEvent);
+                        console.log(jsEvent);
+                        console.log(view);
 
                         $(this).css('border-color', 'red');
                     }

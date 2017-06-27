@@ -109,7 +109,7 @@ jQuery(document).ready(function ($) {
             }
         });
 
-        $('#myInscription').on('hidden.bs.modal', function () {
+        $('#myInscription').on('hide.bs.modal', function () {
             $(this).find("input,select")
                     .val('')
                     .end();                    

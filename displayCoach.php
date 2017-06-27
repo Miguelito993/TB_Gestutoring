@@ -19,6 +19,7 @@ $matiere = $_POST['inputSearch'];
         <link rel="stylesheet" href="./bootstrap/css/theme.css">
         <link rel="stylesheet" href="./bootstrap/css/signin.css">
         <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+        <link rel='stylesheet' href="./assets/css/fullcalendar.min.css">
     </head>
     <body>
 
@@ -39,15 +40,22 @@ $matiere = $_POST['inputSearch'];
 
         <!-- Modal -->
         <?php
-            include './inc/modal_inscrip.php';
+        include './inc/modal_inscrip.php';
+        include './inc/modal_calendar.php';
         ?>
         <!-- /Modal -->
 
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.1/moment.min.js"></script>
+
+        <script src="./assets/js/fullcalendar.min.js"></script>
+        <script src="./assets/js/locale-all.js"></script>
         <script src="./bootstrap/js/bootstrap.js"></script>
         <script src="./assets/js/connexion.js"></script>
         <script src="./assets/js/inscription.js"></script>
+        <script src="./assets/js/calendar.js"></script>
+        
         <script type="text/javascript">
             var green_circle = "./assets/img/green_circle.svg";
             var red_circle = "./assets/img/red_circle.svg";
@@ -61,7 +69,7 @@ $matiere = $_POST['inputSearch'];
             var dateLimitRef = new Date(date);
             dateLimitRef.setDate(date.getDate() + 6);
 
-            dateLoop = new Date(date);            
+            dateLoop = new Date(date);
 
             // Recupère les coachs
             $.getJSON(
@@ -74,12 +82,13 @@ $matiere = $_POST['inputSearch'];
                         var elemImage = $('<img>').addClass('media-object').attr('src', './memoire_tb_pereira/img/draft.png').attr('alt', 'Image de profil').attr('height', 128).attr('width', 128);
                         var elemDivBody = $('<div></div>').addClass('media-body');
                         elemDivImage.append(elemImage);
+                        elemDivBody.append('<input type="text" value="' + d['_id'] + '" hidden/>');
                         elemDivBody.append('<h4>' + d['prenom'] + ' ' + d['nom'] + '</h4><br/>');
                         elemDivBody.append('<span>Matières: ' + d['matieres'] + '</span><br/>');
                         elemDivBody.append('<span>Canton: ' + d['canton'] + '</span><br/>');
                         elemDivBody.append('Statut: <img src="' + ((d['isOnline'] == true) ? green_circle : red_circle) + '" alt="Statut connexion" height="20" width="20"><br/>');
                         elemDivBody.append('<span>Tarif: ' + d['tarif'] + ' CHF/Heure</span><br/>');
-                        elemDivBody.append('<button type="button" class="btn btn-primary">Prendre rendez-vous</button><br/>');
+                        elemDivBody.append('<button name="rsv" type="button" class="btn btn-primary" <?php echo ((!isset($_SESSION['_id']) || $_SESSION['type'] == 'Coach') ? 'disabled="disabled"' : ''); ?>>Prendre rendez-vous</button><br/>');
 
                         $.post('http://localhost:4242/getNotation', {
                             id_user: d['_id']
@@ -97,7 +106,7 @@ $matiere = $_POST['inputSearch'];
                             function (dataPlanning) {
                                 const tabDefault = [null, null, null, null, null, null, null, null, false, false, false, false, false, false, false, false, false, false, false, false, false];
                                 var isDayFree = false;
-                                
+
                                 for (var i = 0; i < 7; i++) {
                                     var tmpTab = tabDefault;
                                     for (var j = 0; j < dataPlanning.length; j++) {
@@ -125,15 +134,59 @@ $matiere = $_POST['inputSearch'];
                     });
                 }
             );
-            
-        $('[data-toggle="overpop"]').popover({html: true, content: "Un <strong>exemple</strong>"});
 
-            /*
-             jQuery(document).ready(function ($) {
-                
-             
-             });
-             */
+            $('[data-toggle="overpop"]').popover({html: true, content: "Un <strong>exemple</strong>"});
+
+
+            jQuery(document).ready(function ($) {
+                $("[name='rsv']").click(function (e) {
+                    var idCoach = $(this)[0].parentNode.childNodes[0].value;
+                    var name = $(this)[0].parentNode.childNodes[1];                    
+                    var fullName = name.outerHTML.substr(4, name.outerHTML.length-9);
+                    
+                    tabEvents = getPlanningWithIdCoachAndDate(tabEvents, idCoach, date.toISOString(), false);                    
+                               
+                    $('#rsvCalendar').fullCalendar('rerenderEvents');
+                    $('#pseudoText').text(' - '+fullName);
+                    $('#myCalendar').modal('show');    
+                });
+
+                $('#rsvCalendar').fullCalendar({
+                    locale: 'fr',
+                    // enable theme
+                    theme: true,
+                    // emphasizes business hours
+                    businessHours: true,
+                    // header
+                    header: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'month,agendaWeek,agendaDay'
+                    },
+                    selectable: true,
+
+                    eventLimit: true,
+
+                    eventSources: [],
+                    
+                    eventClick: function (calEvent, jsEvent, view) {
+                        
+                        console.log(calEvent);
+                        
+
+                        $(this).css('border-color', 'red');
+                    }
+                });
+
+
+
+
+
+                $('#myCalendar').on('hide.bs.modal', function (e) {
+                    tabEvents = [];
+                    $('#rsvCalendar').fullCalendar('removeEvents');
+                });
+            });
         </script>
     </body>
 </html>

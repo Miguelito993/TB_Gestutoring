@@ -4,10 +4,10 @@ jQuery(document).ready(function ($) {
         $('#matiereText').text(matiere);
 
         $.getJSON(
-            'http://localhost:4242/getIdCoachByPseudo/' + partner,
+            'http://localhost:4242/getIdByPseudo/' + partner,
             function (idCoach) {
                 $.getJSON(
-                    'http://localhost:4242/getDataList/' + matiere + '/'+idCoach._id,
+                    'http://localhost:4242/getDataList/' + matiere + '/'+idCoach[0]._id,
                     function (data) {
                         //TODO: Envoyer directement le pdf avec une prévisualisation dans la liste du contenu disponible
                         

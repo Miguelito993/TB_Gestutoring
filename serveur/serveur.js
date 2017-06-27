@@ -196,8 +196,10 @@ var submitMeeting = function (db, info, callback) {
         date: new Date(info.date),
         isFree: (info.isFree == 'true') ? true : false,
         duration: parseInt(info.duration),
+        isEnded: (info.isEnded == 'true') ? true : false,
         id_coach: ObjectId(info.id_coach),
-        id_student: (info.id_student == '') ? null : ObjectId(info.id_student)
+        id_student: (info.id_student == '') ? null : ObjectId(info.id_student),
+        id_matiere: (info.id_matiere == '') ? null : ObjectId(info.id_matiere)
     }, function (err, docs) {
         assert.equal(err, null);
         callback(docs);
@@ -215,15 +217,28 @@ var getDataList = function (db, info, callback) {
     );
 }
 
-var getIdCoachByPseudo = function (db, info, callback) {
+var getIdByPseudo = function (db, info, callback) {
     var collection = db.collection('t_users');
 
-    collection.find({pseudo: info.pseudo}, {_id: 1}).toArray(
+    collection.find({pseudo: info}, {_id: 1}).toArray(
         function (err, docs) {
             assert.equal(err, null);
             callback(docs);
         }
     );
+}
+
+var getPseudoById = function (db, info, callback) {
+    var collection = db.collection('t_users');
+
+    if (info != null) {
+        collection.find({_id: ObjectId(info)}, {pseudo: 1}).toArray(
+            function (err, docs) {                
+                assert.equal(err, null);
+                callback(docs);
+            }
+        );
+    }
 }
 
 
@@ -400,7 +415,7 @@ app.post('/getPlanning', function (req, res) {
 });
 
 app.post('/submitMeeting', function (req, res) {
-    var info = {"id_coach": req.body.id_coach, "date": req.body.date, "isFree": req.body.isFree, "duration": req.body.duration, "id_student": req.body.id_student};
+    var info = {"id_coach": req.body.id_coach, "date": req.body.date, "isFree": req.body.isFree, "duration": req.body.duration, "isEnded": req.body.isEnded, "id_student": req.body.id_student, "id_matiere": req.body.id_matiere};
 
     if ((info.id_coach != null) && (info.date != null)) {
         MongoClient.connect(urlDB, function (err, db) {
@@ -424,28 +439,28 @@ app.get('/getDataList/:matiere/:idCoach', function (req, res) {
     MongoClient.connect(urlDB, function (err, db) {
         assert.equal(err, null);
 
-        getMatieres(db, param, function (docs) {            
-            info.idMatiere = docs[0]._id;            
-            getDataList(db, info, function (result) { 
-                for(var i = 0; i < result.length; i++){
-                    if(result[i].access === 'public'){
+        getMatieres(db, param, function (docs) {
+            info.idMatiere = docs[0]._id;
+            getDataList(db, info, function (result) {
+                for (var i = 0; i < result.length; i++) {
+                    if (result[i].access === 'public') {
                         dataList.push(result[i]);
-                    }else{                        
-                        if(result[i].id_user.toString() === info.idCoach){
+                    } else {
+                        if (result[i].id_user.toString() === info.idCoach) {
                             dataList.push(result[i]);
                         }
                     }
                 }
                 //console.log(util.inspect(dataList, {showHidden: true, depth: null, colors: true}));
                 /*
-                var file = fs.createReadStream(__dirname+'/datas/'+dataList[0]['data']);
-                var writableStream = fs.createWriteStream('file2.txt');
-                var stat = fs.statSync(__dirname+'/datas/'+dataList[0]['data']);
-                res.setHeader('Content-Length', stat.size);
-                res.setHeader('Content-Type', 'application/pdf');
-                res.setHeader('Content-Disposition', 'attachment; filename=exemple.pdf');
-                file.pipe(writableStream);
-                */
+                 var file = fs.createReadStream(__dirname+'/datas/'+dataList[0]['data']);
+                 var writableStream = fs.createWriteStream('file2.txt');
+                 var stat = fs.statSync(__dirname+'/datas/'+dataList[0]['data']);
+                 res.setHeader('Content-Length', stat.size);
+                 res.setHeader('Content-Type', 'application/pdf');
+                 res.setHeader('Content-Disposition', 'attachment; filename=exemple.pdf');
+                 file.pipe(writableStream);
+                 */
                 //res.sendFile(__dirname+'/datas/'+dataList[0]['data']);
                 res.jsonp(dataList);
                 db.close();
@@ -454,17 +469,34 @@ app.get('/getDataList/:matiere/:idCoach', function (req, res) {
     });
 });
 
-app.get('/getIdCoachByPseudo/:pseudo', function (req, res) {
+app.get('/getIdByPseudo/:pseudo', function (req, res) {
     var param = req.params.pseudo;
 
     MongoClient.connect(urlDB, function (err, db) {
         assert.equal(err, null);
 
-        getIdCoachByPseudo(db, param, function (docs) {
+        getIdByPseudo(db, param, function (docs) {
             res.jsonp(docs);
             db.close();
         });
     });
+});
+
+app.get('/getPseudoById/:idStudent', function (req, res) {
+    var info = req.params.idStudent;
+
+    if (info !== 'null') {       
+        MongoClient.connect(urlDB, function (err, db) {
+            assert.equal(err, null);
+
+            getPseudoById(db, info, function (docs) {                
+                res.jsonp(docs);
+                db.close();
+            });
+        });       
+    }else{        
+        res.send(null);
+    }
 });
 
 app.use('/peerjs', ExpressPeerServer(server, {debug: true}));
