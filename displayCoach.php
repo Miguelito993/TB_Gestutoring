@@ -64,7 +64,7 @@ $matiere = $_POST['inputSearch'];
             var week = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
 
             var date = new Date();
-            date.setUTCHours(date.getUTCHours() + 2);
+            //date.setUTCHours(date.getUTCHours() + 2);
 
             var dateLimitRef = new Date(date);
             dateLimitRef.setDate(date.getDate() + 6);
@@ -146,7 +146,7 @@ $matiere = $_POST['inputSearch'];
                     
                     tabEvents = getPlanningWithIdCoachAndDate(tabEvents, idCoach, date.toISOString(), false);                    
                                
-                    $('#rsvCalendar').fullCalendar('rerenderEvents');
+                    $('#rsvCalendar').fullCalendar('refetchEvents');
                     $('#pseudoText').text(' - '+fullName);
                     $('#myCalendar').modal('show');    
                 });

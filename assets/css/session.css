@@ -24,3 +24,8 @@
     float:  right;
     width: 40%;
 }
+.fixed-top{
+    position: absolute;
+    top: 50px;
+    right: 20px;
+}

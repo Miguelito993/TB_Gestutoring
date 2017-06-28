@@ -25,6 +25,8 @@ session_start();
         <!-- End Fixed navbar -->
 
         <div class="container">
+            <div id="infoUtil" class="fixed-top"></div>
+
             <h2 id="titleSession"></h2>
 
             <div id="step4" class="div-chat"> 
@@ -121,20 +123,54 @@ session_start();
             var c;
             var partner;
             var matiere;
-            
-/*
-            if ('<?php echo $_SESSION['pseudo']; ?>' == 'Alexterrieur') {
-                partner = 'IronMan';
-            } else if ('<?php echo $_SESSION['pseudo']; ?>' == 'IronMan') {
-                partner = 'Alexterrieur';
-            } else if ('<?php echo $_SESSION['pseudo']; ?>' == 'Thor') {
-                partner = 'Alainterrieur';
-            } else {
-                partner = 'Thor';
-            }
-            //var partner = ('<?php echo $_SESSION['pseudo']; ?>' == 'Alexterrieur')?'IronMan':'Alexterrieur';
-*/            
-   
+            var idSession;
+
+            var promiseOfMatiere;
+            var promiseOfPartner;
+            var promiseOfMeeting = $.post('http://localhost:4242/getMeeting', {
+                type: '<?php echo $_SESSION['type']; ?>',
+                myID: '<?php echo $_SESSION['_id']; ?>'
+            },
+                function (data) {
+                    var meetingFound = false;
+                    $.each(data, function (index, d) {
+                        var myDate = moment(d['date']);
+                        var myIDPartner = ('<?php echo $_SESSION['type']; ?>' == 'Coach') ? d['id_student'] : d['id_coach'];
+                        var myIDMatiere = d['id_matiere'];
+
+                        // Réservation ok
+                        if (myDate.isBetween(moment().subtract(5, 'minutes'), moment().add(5, 'minutes'))) {
+                            promiseOfMatiere = $.get(
+                                'http://localhost:4242/getMatiereByID/' + myIDMatiere
+                                );
+                            promiseOfPartner = $.get(
+                                'http://localhost:4242/getPseudoById/' + myIDPartner
+                                );
+                            data.idSession = d['_id'];
+                            meetingFound = true;
+                            return false; // Break jQuery each loop
+                        }
+                    });
+                    if (!meetingFound) {
+                        alert('Vous n\'avez pas de rendez-vous prochainement');
+                        document.location.href = 'index.php';
+                    }
+                }
+            );
+
+            /*
+             if ('<?php echo $_SESSION['pseudo']; ?>' == 'Alexterrieur') {
+             partner = 'IronMan';
+             } else if ('<?php echo $_SESSION['pseudo']; ?>' == 'IronMan') {
+             partner = 'Alexterrieur';
+             } else if ('<?php echo $_SESSION['pseudo']; ?>' == 'Thor') {
+             partner = 'Alainterrieur';
+             } else {
+             partner = 'Thor';
+             }
+             //var partner = ('<?php echo $_SESSION['pseudo']; ?>' == 'Alexterrieur')?'IronMan':'Alexterrieur';
+             */
+
             var infoExtra = null;
             var spinner = new Spinner(opts).spin();
 
@@ -254,7 +290,10 @@ session_start();
                 socket.close(true);
                 partner = null;
                 infoExtra = null;
+                matiere = null;
+                idSession = null;
                 c = null;
+                $('#infoUtil').html('');
                 peer.destroy();
 
                 console.log("Destroy peer");
@@ -262,7 +301,25 @@ session_start();
                 //window.location.replace(index.php);
             }
 
-            socket.emit('nouveau_client', {pseudo: '<?php echo $_SESSION['pseudo']; ?>', myID: '<?php echo $_SESSION['_id']; ?>', myPartner: partner});
+            promiseOfMeeting.done(function (data) {
+                idSession = data.idSession;
+
+                promiseOfMatiere.done(function (mat) {
+                    matiere = mat[0].name;
+                    promiseOfPartner.done(function (user) {
+                        partner = user[0].pseudo;
+                                                
+                        if ('<?php echo $_SESSION['_id']; ?>' == 'Coach') {
+                            socket.emit('nouveau_client', {pseudo: '<?php echo $_SESSION['pseudo']; ?>', myID: '<?php echo $_SESSION['_id']; ?>', type: '<?php echo $_SESSION['type']; ?>', tarif: '<?php echo $_SESSION['tarif']; ?>', myPartner: partner});
+                        } else {
+                            socket.emit('nouveau_client', {pseudo: '<?php echo $_SESSION['pseudo']; ?>', myID: '<?php echo $_SESSION['_id']; ?>', type: '<?php echo $_SESSION['type']; ?>', myPartner: partner});
+                        }
+                        $('#infoUtil').append('<h4>' + matiere + '</h4>');
+                    });
+                });
+            });
+
+
 
             socket.on('find_partner', function (info) {
                 var requestedPeer = info.partnerID;

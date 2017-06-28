@@ -72,7 +72,7 @@ if (!isset($_SESSION['pseudo'])) {
             }
 
             var date = new Date();
-            date.setUTCHours(date.getUTCHours() + 2);
+            //date.setUTCHours(date.getUTCHours() + 2);
 
             var myID = "<?php echo $_SESSION['_id'] ?>";
 
@@ -147,6 +147,8 @@ if (!isset($_SESSION['pseudo'])) {
                         $(this).css('border-color', 'red');
                     }
                 });
+                
+                $('#calendar').fullCalendar('refetchEvents');
             });
         </script>
     </body>

@@ -6,8 +6,8 @@ const PORT_DB = 27017;
 const NAME_DB = 'db_gestutoring';
 
 var urlDB = 'mongodb://' + HOST_DB + ':' + PORT_DB + '/' + NAME_DB;
-
 var waitingUsers = {};
+var initialTime;
 
 var app = require('express')(),
     multer = require('multer'),
@@ -175,7 +175,7 @@ var getPlanning = function (db, info, callback) {
 }
 
 var getAllPlanning = function (db, info, callback) {
-    var collection = db.collection('t_meetings');
+    var collection = db.collection('t_meetings');    
 
     collection.aggregate([
         {$match: {id_coach: ObjectId(info.id_coach)}},
@@ -233,7 +233,41 @@ var getPseudoById = function (db, info, callback) {
 
     if (info != null) {
         collection.find({_id: ObjectId(info)}, {pseudo: 1}).toArray(
-            function (err, docs) {                
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            }
+        );
+    }
+}
+
+var getMeeting = function (db, info, callback) {
+    var collection = db.collection('t_meetings');
+
+    // Pour les répétiteurs
+    if (info.type == 'Coach') {
+        collection.find({isFree: false, isEnded: false, id_coach: ObjectId(info.myID)}).toArray(
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            }
+        );
+    } else {  // Pour les étudiants
+        collection.find({isFree: false, isEnded: false, id_student: ObjectId(info.myID)}).toArray(
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            }
+        );
+    }
+}
+
+var getMatiereByID = function (db, info, callback) {
+    var collection = db.collection('t_matieres');
+
+    if (info != null) {
+        collection.find({_id: ObjectId(info)}, {name: 1}).toArray(
+            function (err, docs) {
                 assert.equal(err, null);
                 callback(docs);
             }
@@ -485,18 +519,46 @@ app.get('/getIdByPseudo/:pseudo', function (req, res) {
 app.get('/getPseudoById/:idStudent', function (req, res) {
     var info = req.params.idStudent;
 
-    if (info !== 'null') {       
+    if (info !== 'null') {
         MongoClient.connect(urlDB, function (err, db) {
             assert.equal(err, null);
 
-            getPseudoById(db, info, function (docs) {                
+            getPseudoById(db, info, function (docs) {
                 res.jsonp(docs);
                 db.close();
             });
-        });       
-    }else{        
+        });
+    } else {
         res.send(null);
     }
+});
+
+app.post('/getMeeting', function (req, res) {
+    var info = {"type": req.body.type, "myID": req.body.myID};
+
+    if ((info.type != null) && (info.myID != null)) {
+        MongoClient.connect(urlDB, function (err, db) {
+            assert.equal(err, null);
+
+            getMeeting(db, info, function (docs) {
+                res.jsonp(docs);
+                db.close();
+            });
+        });
+    }
+});
+
+app.get('/getMatiereByID/:idMatiere', function (req, res) {
+    var param = req.params.idMatiere;
+
+    MongoClient.connect(urlDB, function (err, db) {
+        assert.equal(err, null);
+
+        getMatiereByID(db, param, function (docs) {
+            res.jsonp(docs);
+            db.close();
+        });
+    });
 });
 
 app.use('/peerjs', ExpressPeerServer(server, {debug: true}));
@@ -506,27 +568,36 @@ app.use(function (req, res, next) {
     res.status(404).send('Page introuvable !\n');
 });
 
-io.sockets.on('connection', function (socket, pseudo) {
-
+io.sockets.on('connection', function (socket) {
     socket.on('nouveau_client', function (userInfo) {
+        console.log(util.inspect(userInfo, {showHidden: true, depth: null, colors: true}));
         socket.pseudo = userInfo.pseudo;
         waitingUsers[socket.pseudo] = {};
         waitingUsers[socket.pseudo]['myID'] = userInfo.myID;
+        waitingUsers[socket.pseudo]['type'] = userInfo.type;
+        if(userInfo.type == 'Coach'){
+            waitingUsers[socket.pseudo]['tarif'] = userInfo.tarif;
+        }
         waitingUsers[socket.pseudo]['myPartner'] = userInfo.myPartner;
-        console.log(util.inspect(waitingUsers, {showHidden: true, depth: null, colors: true}));
+        //console.log(util.inspect(waitingUsers, {showHidden: true, depth: null, colors: true}));
         if (waitingUsers[userInfo.myPartner] != null) {
             setTimeout(function () {
                 socket.emit('find_partner', {partnerID: waitingUsers[userInfo.myPartner]['myID'], partnerName: userInfo.myPartner});
+                initialTime = new Date().getTime();
             }, 10000);
         }
+        
+        
     });
 
     socket.on('close_socket', function (info) {
         delete waitingUsers[info.myPseudo];
         delete waitingUsers[info.partnerPseudo];
+        
+        var d = new Date().getTime();
+        var durationTime = ((d - initialTime) / 1000);
+        console.log('======== Temps en secondes : '+durationTime);
     });
-
-
 });
 
 server.listen(PORT, HOSTNAME, () => {
