@@ -76,6 +76,7 @@ session_start();
         <!-- Modal -->
         <?php
         include './inc/modal_datas.php';
+        include './inc/modal_notation.php';
         ?>
         <!-- /Modal -->
 
@@ -89,7 +90,7 @@ session_start();
         <!-- Include internal JS libs. -->
         <script src="./bootstrap/js/bootstrap.js"></script>
         <script src="./assets/js/spin.min.js"></script>
-        <script src="./assets/js/datas.js"></script>
+        <script src="./assets/js/session.js"></script>
         <script>
             // Compatibility shim
             navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
@@ -122,6 +123,7 @@ session_start();
             var socket = io.connect('http://localhost:4242');
             var c;
             var partner;
+            var partnerID;
             var matiere;
             var idSession;
 
@@ -135,16 +137,17 @@ session_start();
                     var meetingFound = false;
                     $.each(data, function (index, d) {
                         var myDate = moment(d['date']);
-                        var myIDPartner = ('<?php echo $_SESSION['type']; ?>' == 'Coach') ? d['id_student'] : d['id_coach'];
+                        partnerID = ('<?php echo $_SESSION['type']; ?>' == 'Coach') ? d['id_student'] : d['id_coach'];
                         var myIDMatiere = d['id_matiere'];
 
                         // Réservation ok
-                        if (myDate.isBetween(moment().subtract(5, 'minutes'), moment().add(5, 'minutes'))) {
+                        //TODO: Ne pas oublier de remodifier les valeurs du temps pour une période +- 5 minutes
+                        if (myDate.isBetween(moment().subtract(35, 'minutes'), moment().add(35, 'minutes'))) {
                             promiseOfMatiere = $.get(
                                 'http://localhost:4242/getMatiereByID/' + myIDMatiere
                                 );
                             promiseOfPartner = $.get(
-                                'http://localhost:4242/getPseudoById/' + myIDPartner
+                                'http://localhost:4242/getPseudoById/' + partnerID
                                 );
                             data.idSession = d['_id'];
                             meetingFound = true;
@@ -281,14 +284,22 @@ session_start();
                 spinner.stop();
                 $('#step3, #step4, #video-container, #chatbox, #searchData').show();
                 $('#titleSession').text("Session de chat avec " + partner);
+                $('#infoUtil').append('<h4>' + matiere + '</h4>');
 
             }
 
             function cleanVars() {
                 step2();
-                socket.emit('close_socket', {myPseudo: '<?php echo $_SESSION['pseudo']; ?>', partnerPseudo: partner});
+                if('<?php echo $_SESSION['type']; ?>' == 'Student'){
+                    $('#myNotation').modal('show');
+                    $('#idUser').val(partnerID);
+                }else{
+                    socket.emit('close_session', {idSession: idSession});
+                    socket.emit('close_socket', {myPseudo: '<?php echo $_SESSION['pseudo']; ?>', partnerPseudo: partner});                    
+                }
                 socket.close(true);
                 partner = null;
+                partnerID = null;
                 infoExtra = null;
                 matiere = null;
                 idSession = null;
@@ -308,13 +319,12 @@ session_start();
                     matiere = mat[0].name;
                     promiseOfPartner.done(function (user) {
                         partner = user[0].pseudo;
-                                                
-                        if ('<?php echo $_SESSION['_id']; ?>' == 'Coach') {
+
+                        if ('<?php echo $_SESSION['type']; ?>' == 'Coach') {
                             socket.emit('nouveau_client', {pseudo: '<?php echo $_SESSION['pseudo']; ?>', myID: '<?php echo $_SESSION['_id']; ?>', type: '<?php echo $_SESSION['type']; ?>', tarif: '<?php echo $_SESSION['tarif']; ?>', myPartner: partner});
                         } else {
                             socket.emit('nouveau_client', {pseudo: '<?php echo $_SESSION['pseudo']; ?>', myID: '<?php echo $_SESSION['_id']; ?>', type: '<?php echo $_SESSION['type']; ?>', myPartner: partner});
-                        }
-                        $('#infoUtil').append('<h4>' + matiere + '</h4>');
+                        }                        
                     });
                 });
             });
@@ -422,8 +432,7 @@ session_start();
 
                 $('#end-call').click(function () {
                     window.existingCall.close();
-                    peer.destroy();
-                    step2();
+                    peer.destroy();                    
                 });
 
                 // Retry if getUserMedia fails

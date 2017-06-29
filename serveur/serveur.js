@@ -165,7 +165,7 @@ var getPlanning = function (db, info, callback) {
     collection.aggregate([
         {$match: {id_coach: ObjectId(info.id_coach)}},
         {$match: {date: {$lt: new Date(info.dateLimit), $gt: new Date(info.dateNow)}}},
-        {$sort: {day: 1}}
+        {$sort: {date: 1}}
     ]).toArray(
         function (err, docs) {
             assert.equal(err, null);
@@ -175,12 +175,12 @@ var getPlanning = function (db, info, callback) {
 }
 
 var getAllPlanning = function (db, info, callback) {
-    var collection = db.collection('t_meetings');    
+    var collection = db.collection('t_meetings');
 
     collection.aggregate([
         {$match: {id_coach: ObjectId(info.id_coach)}},
         {$match: {date: {$gt: new Date(info.dateNow)}}},
-        {$sort: {day: 1}}
+        {$sort: {date: 1}}
     ]).toArray(
         function (err, docs) {
             assert.equal(err, null);
@@ -275,6 +275,46 @@ var getMatiereByID = function (db, info, callback) {
     }
 }
 
+var submitNotation = function (db, info, callback) {
+    var collection = db.collection('t_notations');
+
+    collection.insertOne({
+        notation: parseInt(info.note),
+        description: ent.encode(info.comment),
+        id_user: ObjectId(info.idUser)
+    }, function (err, docs) {
+        assert.equal(err, null);
+        callback(docs);
+    });
+}
+
+var doTransaction = function (db, info) {
+    var collection = db.collection('t_users');
+
+    // Ajouter sur le compte du répétiteur
+    collection.update({_id: ObjectId(info.idCoach)}, {$inc: {soldes: parseFloat(info.somme)}},
+        function (err) {
+            assert.equal(err, null);
+        }
+    );
+
+    // Retirer du compte de l'étudiant
+    collection.update({_id: ObjectId(info.idStudent)}, {$inc: {soldes: -parseFloat(info.somme)}},
+        function (err) {
+            assert.equal(err, null);
+        }
+    );
+}
+
+var endingSession = function (db, id) {
+    var collection = db.collection('t_meetings');
+
+    collection.update({_id: ObjectId(id)}, {$set: {isEnded: true}},
+        function (err) {
+            assert.equal(err, null);
+        }
+    );
+}
 
 var insertUser = function (db, user) {
     var collection = db.collection('t_users');
@@ -561,6 +601,23 @@ app.get('/getMatiereByID/:idMatiere', function (req, res) {
     });
 });
 
+app.post('/submitNotation', function (req, res) {
+    var info = {"note": req.body.note, "comment": req.body.comment, "idUser": req.body.idUser};
+
+    if ((info.note != null) && (info.idUser != null)) {
+        MongoClient.connect(urlDB, function (err, db) {
+            assert.equal(err, null);
+
+            submitNotation(db, info, function (docs) {
+                res.jsonp(docs);
+                db.close();
+            });
+        });
+    }
+});
+
+
+
 app.use('/peerjs', ExpressPeerServer(server, {debug: true}));
 
 app.use(function (req, res, next) {
@@ -570,33 +627,59 @@ app.use(function (req, res, next) {
 
 io.sockets.on('connection', function (socket) {
     socket.on('nouveau_client', function (userInfo) {
-        console.log(util.inspect(userInfo, {showHidden: true, depth: null, colors: true}));
         socket.pseudo = userInfo.pseudo;
         waitingUsers[socket.pseudo] = {};
         waitingUsers[socket.pseudo]['myID'] = userInfo.myID;
         waitingUsers[socket.pseudo]['type'] = userInfo.type;
-        if(userInfo.type == 'Coach'){
+        if (userInfo.type == 'Coach') {
             waitingUsers[socket.pseudo]['tarif'] = userInfo.tarif;
         }
         waitingUsers[socket.pseudo]['myPartner'] = userInfo.myPartner;
-        //console.log(util.inspect(waitingUsers, {showHidden: true, depth: null, colors: true}));
+        console.log(util.inspect(waitingUsers, {showHidden: true, depth: null, colors: true}));
         if (waitingUsers[userInfo.myPartner] != null) {
             setTimeout(function () {
                 socket.emit('find_partner', {partnerID: waitingUsers[userInfo.myPartner]['myID'], partnerName: userInfo.myPartner});
                 initialTime = new Date().getTime();
             }, 10000);
         }
-        
-        
+
+
     });
 
-    socket.on('close_socket', function (info) {
-        delete waitingUsers[info.myPseudo];
-        delete waitingUsers[info.partnerPseudo];
+    socket.on('close_socket', function (info) {     
+        if (waitingUsers[info.myPseudo]['type'] == 'Coach') {
+            var d = new Date().getTime();
+            var durationTime = Math.round(((d - initialTime) / 1000) * 100) / 100;  // Arrondi à deux décimales
+
+            // Le temps est en secondes donc / 3600
+            var somme = Math.round(((waitingUsers[info.myPseudo]['tarif'] * durationTime) / 3600) * 100) / 100;   // Arrondi à deux décimales
+
+            // Effectue la transaction entre le compte de l'étudiant et du répétiteur
+            var infoDB = {"idCoach": waitingUsers[info.myPseudo]['myID'], "somme": somme, "idStudent": waitingUsers[info.partnerPseudo]['myID']};
+            MongoClient.connect(urlDB, function (err, db) {
+                assert.equal(err, null);
+
+                doTransaction(db, infoDB);
+                db.close();
+            });
+
+            console.log("======== Somme calculé pour cette séance: " + somme);
+            console.log('======== Temps : ' + durationTime + ' [s] - ' + durationTime / 60 + ' [min]');
+
+            delete waitingUsers[info.myPseudo];
+            delete waitingUsers[info.partnerPseudo];
+        }
+    });
+
+    socket.on('close_session', function (info) {
+        var idSession = info.idSession;
         
-        var d = new Date().getTime();
-        var durationTime = ((d - initialTime) / 1000);
-        console.log('======== Temps en secondes : '+durationTime);
+        MongoClient.connect(urlDB, function (err, db) {
+            assert.equal(err, null);
+
+            endingSession(db, idSession);
+            db.close();
+        });
     });
 });
 
