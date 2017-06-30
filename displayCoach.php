@@ -55,10 +55,12 @@ $matiere = $_POST['inputSearch'];
         <script src="./assets/js/connexion.js"></script>
         <script src="./assets/js/inscription.js"></script>
         <script src="./assets/js/calendar.js"></script>
-        
+
         <script type="text/javascript">
             var green_circle = "./assets/img/green_circle.svg";
             var red_circle = "./assets/img/red_circle.svg";
+
+            var promiseOfPlanning;
 
             var tabPlanning, dateLoop = null;
             var week = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
@@ -139,17 +141,6 @@ $matiere = $_POST['inputSearch'];
 
 
             jQuery(document).ready(function ($) {
-                $("[name='rsv']").click(function (e) {
-                    var idCoach = $(this)[0].parentNode.childNodes[0].value;
-                    var name = $(this)[0].parentNode.childNodes[1];                    
-                    var fullName = name.outerHTML.substr(4, name.outerHTML.length-9);
-                    
-                    tabEvents = getPlanningWithIdCoachAndDate(tabEvents, idCoach, date.toISOString(), false);                    
-                               
-                    $('#rsvCalendar').fullCalendar('refetchEvents');
-                    $('#pseudoText').text(' - '+fullName);
-                    $('#myCalendar').modal('show');    
-                });
 
                 $('#rsvCalendar').fullCalendar({
                     locale: 'fr',
@@ -168,19 +159,68 @@ $matiere = $_POST['inputSearch'];
                     eventLimit: true,
 
                     eventSources: [],
-                    
-                    eventClick: function (calEvent, jsEvent, view) {
-                        
-                        console.log(calEvent);
-                        
+
+                    eventClick: function (calEvent, jsEvent, view) {                        
+                        if (calEvent.editable) {
+                            // TODO: Vérifier avec une alerte si l'utilisateur veut vraiment réservé cette période
+                            var idMeeting = calEvent.id;
+                            var idStudent = '<?php echo $_SESSION['_id']; ?>';
+                            $.get(
+                                'http://localhost:4242/getMatiereIDByName/' + <?php echo $matiere; ?>,
+                                function (mat) {
+                                    $.post('http://localhost:4242/makeMeeting', {
+                                        idMeeting: idMeeting,
+                                        idStudent: idStudent,
+                                        idMatiere: mat[0]._id
+                                    },
+                                        function (data) {
+                                            console.log(data);
+                                        }
+                                    );
+                                }
+                            );
+                        }
 
                         $(this).css('border-color', 'red');
                     }
                 });
 
+                $('[name="rsv"]').click(function (e) {
+                    var idCoach = $(this)[0].parentNode.childNodes[0].value;
+                    var name = $(this)[0].parentNode.childNodes[1];
+                    var fullName = name.outerHTML.substr(4, name.outerHTML.length - 9);
 
+                    promiseOfPlanning = $.post('http://localhost:4242/getPlanning', {
+                        id_coach: idCoach,
+                        dateNow: date.toISOString()
+                    },
+                        function (data) {
+                            $.each(data, function (index, d) {
+                                $.get(
+                                    'http://localhost:4242/getPseudoById/' + d['id_student'],
+                                    function (user) {
+                                        var myTitle = (d['isFree'] == true) ? "Libre" : "Occupé";
+                                        var myStart = new Date(d['date']);
+                                        var myEnd = transformDateStartToEnd(myStart, d['duration']);
+                                        var myColor = ((myTitle == "Libre") ? "#1E9C1E" : "#FF0000");
+                                        var isEditable = (d['isFree'] == true) ? true : false;
+                                        tabEvents.push({id: d['_id'], title: myTitle, start: myStart, end: myEnd, color: myColor, editable: isEditable});
+                                    }
+                                );
+                            });
+                        }
+                    );
 
+                    promiseOfPlanning.then(function () {
+                        console.log(tabEvents);
+                        $('#rsvCalendar').fullCalendar('removeEvents');
+                        $('#rsvCalendar').fullCalendar('addEventSource', tabEvents);
+                        $('#rsvCalendar').fullCalendar('refetchEvents');
+                        $('#pseudoText').text(' - ' + fullName);
+                        $('#myCalendar').modal('show');
+                    });
 
+                });
 
                 $('#myCalendar').on('hide.bs.modal', function (e) {
                     tabEvents = [];

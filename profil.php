@@ -1,8 +1,8 @@
 <?php
 session_start();
 if (!isset($_SESSION['pseudo'])) {
-    //header('Location: index.php');
-    //exit();
+    header('Location: index.php');
+    exit();
 }
 ?>
 <!DOCTYPE html>
@@ -76,7 +76,25 @@ if (!isset($_SESSION['pseudo'])) {
 
             var myID = "<?php echo $_SESSION['_id'] ?>";
 
-            tabEvents = getPlanningWithIdCoachAndDate(tabEvents, myID, date.toISOString(), true);
+            var promiseOfProfil = $.post('http://localhost:4242/getPlanning', {
+                id_coach: myID,
+                dateNow: date.toISOString()
+            },
+                function (data) {                    
+                    $.each(data, function (index, d) {
+                        $.get(
+                            'http://localhost:4242/getPseudoById/' + d['id_student'],
+                            function (user) {                                
+                                var myTitle = (d['isFree'] == true) ? "Libre" : user[0].pseudo;                                
+                                var myStart = new Date(d['date']);
+                                var myEnd = transformDateStartToEnd(myStart, d['duration']);
+                                var myColor = ((myTitle == "Libre") ? "#1E9C1E" : "#FF0000");
+                                tabEvents.push({id: d['_id'], title: myTitle, start: myStart, end: myEnd, color: myColor});
+                            }
+                        );
+                    });                    
+                }
+            );
             
             jQuery(document).ready(function ($) {
                 $('#calendar').fullCalendar({
@@ -96,6 +114,7 @@ if (!isset($_SESSION['pseudo'])) {
                     eventLimit: true,
 
                     eventSources: [],
+
                     dayClick: function (date, jsEvent, view) {
                         if (date.isBefore(moment().subtract(1, 'days'))) {
                             $('#calendar').fullCalendar('unselect');
@@ -112,9 +131,9 @@ if (!isset($_SESSION['pseudo'])) {
                             if ($('#inputHeure').val() != null) {
                                 $('#inputHeure').html('');
                             }
-                            
+
                             for (var i = 0; i < tabHours.length; i++) {
-                                if (tabHours[i] != null) {                                    
+                                if (tabHours[i] != null) {
                                     if (tabHours[i] != false) {
                                         if (tabHours[i][0] == true) {
                                             $('#inputHeure').append("<option disabled>" + i + "h00</option>");
@@ -147,8 +166,14 @@ if (!isset($_SESSION['pseudo'])) {
                         $(this).css('border-color', 'red');
                     }
                 });
-                
-                $('#calendar').fullCalendar('refetchEvents');
+
+                promiseOfProfil.then(function () {            
+                    console.log(tabEvents);
+                    $('#calendar').fullCalendar('removeEvents');
+                    $('#calendar').fullCalendar('addEventSource', tabEvents);
+                    $('#calendar').fullCalendar('refetchEvents'); 
+                });
+
             });
         </script>
     </body>

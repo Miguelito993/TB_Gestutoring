@@ -316,6 +316,30 @@ var endingSession = function (db, id) {
     );
 }
 
+var getMatiereIDByName = function (db, info, callback) {
+    var collection = db.collection('t_matieres');
+
+    if (info != null) {
+        collection.find({name: info}).toArray(
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            }
+        );
+    }
+}
+
+var makeMeeting = function (db, info, callback) {
+    var collection = db.collection('t_meetings');
+
+    collection.update({_id: ObjectId(info.idMeeting)}, {$set: {isFree: false, id_student: ObjectId(info.idStudent), id_matiere: ObjectId(info.idMatiere)}},
+        function (err, docs) {
+            assert.equal(err, null);
+            callback(docs);
+        }
+    );
+}
+
 var insertUser = function (db, user) {
     var collection = db.collection('t_users');
 
@@ -616,7 +640,33 @@ app.post('/submitNotation', function (req, res) {
     }
 });
 
+app.get('/getMatiereIDByName/:matiere', function (req, res) {
+    var param = req.params.matiere;
 
+    MongoClient.connect(urlDB, function (err, db) {
+        assert.equal(err, null);
+
+        getMatiereIDByName(db, param, function (docs) {
+            res.jsonp(docs);
+            db.close();
+        });
+    });
+});
+
+app.post('/makeMeeting', function (req, res) {
+    var info = {"idMeeting": req.body.idMeeting, "idStudent": req.body.idStudent, "idMatiere": req.body.idMatiere};
+
+    if ((info.idMeeting != null) && (info.idStudent != null) && (idMatiere != null)) {
+        MongoClient.connect(urlDB, function (err, db) {
+            assert.equal(err, null);
+
+            makeMeeting(db, info, function (docs) {
+                res.jsonp(docs);
+                db.close();
+            });
+        });
+    }
+});
 
 app.use('/peerjs', ExpressPeerServer(server, {debug: true}));
 
@@ -642,11 +692,9 @@ io.sockets.on('connection', function (socket) {
                 initialTime = new Date().getTime();
             }, 10000);
         }
-
-
     });
 
-    socket.on('close_socket', function (info) {     
+    socket.on('close_socket', function (info) {
         if (waitingUsers[info.myPseudo]['type'] == 'Coach') {
             var d = new Date().getTime();
             var durationTime = Math.round(((d - initialTime) / 1000) * 100) / 100;  // Arrondi à deux décimales
@@ -673,7 +721,7 @@ io.sockets.on('connection', function (socket) {
 
     socket.on('close_session', function (info) {
         var idSession = info.idSession;
-        
+
         MongoClient.connect(urlDB, function (err, db) {
             assert.equal(err, null);
 
