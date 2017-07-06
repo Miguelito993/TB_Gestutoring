@@ -24,53 +24,74 @@ session_start();
         </nav>
         <!-- End Fixed navbar -->
 
-        <div class="container">
+        <div class="container">            
+            <!-- Get local audio/video stream -->
+            <div id="step1">
+                <p>Cliquez sur `Autoriser` en haut de l'écran afin que nous puissions accéder à votre webcam et votre microphone pour les appels.</p>
+                <div id="step1-error">
+                    <p>Impossible d'accèder à la webcam et au microphone. </p>
+                    <a href="#" id="step1-retry">Rafraîchir</a>
+                </div>
+            </div>
+            <!-- Make calls to others -->
+            <div id="step2" hidden>
+                <h2 class="text-center">Merci d'attendre votre correspondant</h2> 
+            </div>
+                        
             <div id="infoUtil" class="fixed-top"></div>
 
-            <h2 id="titleSession"></h2>
-
-            <div id="step4" class="div-chat"> 
-                <div id="chatbox" class="connection form-control"></div>
-                <form id="send">
-                    <input type="text" id="text" placeholder="Votre message">
-                    <input class="btn" type="submit" value="Envoyer">
-                </form>
+            <div class="table-responsive">
+                <table class="table">
+                    <tr>
+                        <td colspan="2" class="col-xs-12"><h2 id="titleSession" hidden></h2></td>
+                    </tr>
+                    <tr>                
+                        <td class="col-xs-8"><div id="chatbox" class="connection form-control" hidden></div></td>
+                        <td class="col-xs-4">
+                            <div id="video-container-1" hidden>
+                                <video id="their-video" height="300" class="embed-responsive-item div-video-peer" crossorigin="anonymous" autoplay></video>                    
+                            </div>
+                        </td>                
+                    </tr>                
+                    <tr>
+                        <td class="col-xs-8">                                
+                            <form id="send" class="row" hidden>
+                                <div class="form-group">
+                                    <div class="col-xs-10">
+                                        <input type="text" id="text" class="form-control" placeholder="Votre message">
+                                    </div>
+                                    <input class="btn btn-success" type="submit" value="Envoyer">
+                                </div>
+                            </form>                            
+                        </td>
+                        <td rowspan="2" class="col-xs-4">
+                            <div id="video-container-2" hidden>
+                                <video id="my-video" height="150" class="embed-responsive-item div-video-me" crossorigin="anonymous" muted="true" autoplay></video>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-8">
+                            <?php
+                                if ($_SESSION['type'] == 'Coach') {
+                                    echo '<button type="button" id="searchData" class="btn btn-info btn-block" data-toggle="modal" data-target="#myDatas" hidden>Recherche de contenu</button>';
+                                }
+                            ?>
+                        </td>
+                    </tr>  
+                    <tr>
+                        <td class="col-xs-8"></td>
+                        <td class="col-xs-4">
+                            <div id="step3" hidden>  
+                                <span id="my-id" hidden></span>
+                                <span id="their-id" hidden></span>
+                                <p><button type="button" id="end-call" class="btn btn-danger form-control">Terminer l'appel</button></p>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                </table>
             </div>
-
-            <!-- Video area -->
-            <div id="video-container" class="div-video">
-                <video id="their-video" width="450" height="280" class="embed-responsive-item peer-video" crossorigin="anonymous" autoplay></video>
-                <video id="my-video" width="250" height="150" class="embed-responsive-item my-video" crossorigin="anonymous" muted="true" autoplay></video>
-            </div>
-            <?php
-            if ($_SESSION['type'] == 'Coach') {
-                echo '<button type="button" id="searchData" class="btn btn-info" data-toggle="modal" data-target="#myDatas">Recherche de contenu</button>';
-            }
-            ?>
-            <!-- Steps -->
-            <div>              
-                <!-- Get local audio/video stream -->
-                <div id="step1">
-                    <p>Cliquez sur `Autoriser` en haut de l'écran afin que nous puissions accéder à votre webcam et votre microphone pour les appels.</p>
-                    <div id="step1-error">
-                        <p>Impossible d'accèder à la webcam et au microphone. </p>
-                        <a href="#" id="step1-retry">Rafraîchir</a>
-                    </div>
-                </div>
-
-                <!-- Make calls to others -->
-                <div id="step2">
-                    <h2 class="text-center">Merci d'attendre votre correspondant</h2> 
-                </div>
-
-                <!-- Call in progress -->
-                <div id="step3">  
-                    <span id="my-id" hidden></span>
-                    <span id="their-id" hidden></span>
-                    <p><button type="button" id="end-call" class="btn btn-danger">Terminer l'appel</button></p>
-                </div>
-            </div>
-
         </div> <!-- /container -->    
 
         <!-- Modal -->
@@ -134,6 +155,7 @@ session_start();
                 myID: '<?php echo $_SESSION['_id']; ?>'
             },
                 function (data) {
+                    console.log(data);
                     var meetingFound = false;
                     $.each(data, function (index, d) {
                         var myDate = moment(d['date']);
@@ -142,7 +164,7 @@ session_start();
 
                         // Réservation ok
                         //TODO: Ne pas oublier de remodifier les valeurs du temps pour une période +- 5 minutes
-                        if (myDate.isBetween(moment().subtract(35, 'minutes'), moment().add(35, 'minutes'))) {
+                        if (myDate.isBetween(moment().subtract(45, 'minutes'), moment().add(45, 'minutes'))) {
                             promiseOfMatiere = $.get(
                                 'http://localhost:4242/getMatiereByID/' + myIDMatiere
                                 );
@@ -156,7 +178,8 @@ session_start();
                     });
                     if (!meetingFound) {
                         alert('Vous n\'avez pas de rendez-vous prochainement');
-                        document.location.href = 'index.php';
+                        //window.location.replace('index.php');
+                        //document.location.href = 'index.php';
                     }
                 }
             );
@@ -204,7 +227,7 @@ session_start();
                     var messages = $('<div><em>Correspondant connecté</em></div>').addClass('messages');
                     chatbox.append(messages);
 
-                    $('#step4').prepend(chatbox);
+                    $('#chatbox').prepend(chatbox);
 
                     c.on('data', function (data) {
                         messages.append('<div><span class="peer">' + partner + '</span>: ' + data + '</div>');
@@ -256,11 +279,13 @@ session_start();
                     step2();
                 }, function () {
                     $('#step1-error').show();
+                    alert("Branchez votre webcam avant de lancer une session");
+                    window.location.replace('index.php');
                 });
             }
 
             function step2() {
-                $('#step1, #step3, #step4, #video-container, #chatbox, #searchData').hide();
+                $('#step1, #step3, #video-container-1, #video-container-2, #chatbox, #searchData, #send').hide();
                 $('#step2').prepend(spinner.el);
                 $('#step2').show();
             }
@@ -282,7 +307,7 @@ session_start();
                 call.on('close', cleanVars);
                 $('#step1, #step2').hide();
                 spinner.stop();
-                $('#step3, #step4, #video-container, #chatbox, #searchData').show();
+                $('#step3, #video-container-1, #video-container-2, #chatbox, #searchData, #titleSession, #send').show();
                 $('#titleSession').text("Session de chat avec " + partner);
                 $('#infoUtil').append('<h4>' + matiere + '</h4>');
 
@@ -311,8 +336,10 @@ session_start();
                 console.log(peer);
                 //window.location.replace(index.php);
             }
-
-            promiseOfMeeting.done(function (data) {
+                
+            /* 
+            //Alternative des lignes de codes suivantes      
+                promiseOfMeeting.done(function (data) {
                 idSession = data.idSession;
 
                 promiseOfMatiere.done(function (mat) {
@@ -327,6 +354,24 @@ session_start();
                         }                        
                     });
                 });
+            });
+            */
+               
+            promiseOfMeeting.then(function (data) {                
+                idSession = data.idSession;                
+                return promiseOfMatiere;
+            })
+            .then(function (mat){
+                matiere = mat[0].name;
+                return promiseOfPartner;
+            })
+            .then(function (user){
+                partner = user[0].pseudo;
+                if ('<?php echo $_SESSION['type']; ?>' == 'Coach') {
+                    socket.emit('nouveau_client', {pseudo: '<?php echo $_SESSION['pseudo']; ?>', myID: '<?php echo $_SESSION['_id']; ?>', type: '<?php echo $_SESSION['type']; ?>', tarif: '<?php echo $_SESSION['tarif']; ?>', myPartner: partner});
+                } else {
+                    socket.emit('nouveau_client', {pseudo: '<?php echo $_SESSION['pseudo']; ?>', myID: '<?php echo $_SESSION['_id']; ?>', type: '<?php echo $_SESSION['type']; ?>', myPartner: partner});
+                }  
             });
 
 
@@ -419,6 +464,8 @@ session_start();
                     var msg = $('#text').val();
                     var theirId = $('#their-id').text();
                     var conns = peer.connections[theirId];
+                    
+                    console.log(msg);
 
                     if (conns[1].label === 'chat') {
                         conns[1].send(msg);

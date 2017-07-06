@@ -10,7 +10,7 @@
 
                     <div class="form-group">
                         <label for="inputNote" class="col-sm-2 control-label">Note</label>                        
-                        <div class="rating">                
+                        <div class="col-sm-8 rating">                
                             <a href="#10" class="starLink" title="Donner 10 étoiles">★</a>
                             <a href="#9" class="starLink" title="Donner 9 étoiles">★</a>
                             <a href="#8" class="starLink" title="Donner 8 étoiles">★</a>
@@ -27,7 +27,7 @@
                     <div class="form-group">
                         <label for="inputComment" class="col-sm-2 control-label">Commentaire</label>
                         <div class="col-sm-8">
-                            <textarea id="inputComment" class="form-control" style="resize: none; width: 400px" rows="3"></textarea>
+                            <textarea id="inputComment" class="form-control" style="resize: none" rows="3"></textarea>
                         </div>
                     </div>                    
                     <input type="text" id="idUser" hidden/>

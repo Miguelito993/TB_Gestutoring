@@ -267,7 +267,7 @@ th {
     src: url('../fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../fonts/glyphicons-halflings-regular.woff2') format('woff2'), url('../fonts/glyphicons-halflings-regular.woff') format('woff'), url('../fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('../fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
 }
 .listCoach{
-    width: 80%;
+    width: 100%;
     background: #FFFFFF;
     border: 1px solid #ebebeb;
     margin: 5px;
@@ -2272,7 +2272,8 @@ th {
 .table {
     width: 100%;
     max-width: 100%;
-    margin-bottom: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 .table > thead > tr > th,
 .table > tbody > tr > th,
@@ -2283,7 +2284,7 @@ th {
     padding: 8px;
     line-height: 1.42857143;
     vertical-align: top;
-    border-top: 1px solid #ddd;
+    /*border-top: 1px solid #ddd;*/
 }
 .table > thead > tr > th {
     vertical-align: bottom;

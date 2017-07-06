@@ -12,17 +12,20 @@
 }
 .connection{
     overflow: scroll;
-    height: 200px;
+    height: 300px;
+    max-height: 300px;
 }
 .div-chat{
     position: relative;
     float: left;
     width: 60%;
 }
-.div-video{
-    position: relative;
-    float:  right;
-    width: 40%;
+.div-video-peer{    
+    width: 100%;
+}
+.div-video-me{    
+    width: 70%;    
+    float: right;
 }
 .fixed-top{
     position: absolute;
@@ -30,8 +33,7 @@
     right: 20px;
 }
 .rating {
-   direction: rtl;
-   width: 520px;
+   direction: rtl;   
 }
 .rating a {
    color: #aaa;

@@ -40,7 +40,7 @@ jQuery(document).ready(function ($) {
         $.post('http://localhost:4242/submitNotation', {
             note: note,
             comment: comment,
-            idUser: idUser,            
+            id_coach: idUser,            
         },
             function (data) {
                 console.log(data)
@@ -71,7 +71,7 @@ jQuery(document).ready(function ($) {
     });
 
     $('#myDatas').on('hide.bs.modal', function (e) {
-        $('.table').html('<tr><th>#</th><th>Type</th><th>Aperçu</th><th>Envoyer</th></tr>').attr('hidden');
+        $('#tablePrivate, #tablePublic').html('<tr><th>#</th><th>Type</th><th>Aperçu</th><th>Envoyer</th></tr>').attr('hidden');
         //$('#tablePrivate').html('<tr><th>#</th><th>Type</th><th>Lien</th><th></th></tr>').attr('hidden');
     });
     
