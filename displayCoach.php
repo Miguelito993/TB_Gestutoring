@@ -104,7 +104,7 @@ $matiere = $_POST['inputSearch'];
 
                         var elemImage = $('<img>').addClass('img-responsive').attr('src', './memoire_tb_pereira/img/draft.png').attr('alt', 'Image de profil').attr('height', 128).attr('width', 128);
                         var elemName = $('<span></span>').text(d['prenom'] + ' ' + d['nom']);
-                        var elemMatiere = $('<span>Matières </span>').append($('<span></span>').addClass('glyphicon glyphicon-tags').attr('aria-hidden', 'true').attr('data-toggle', 'popMatiere').attr('data-trigger', 'hover').attr('title', 'Matières enseignées').attr('data-html', 'true').attr('data-content', transformObjectToArrayHTML(d['matieres'])));
+                        var elemMatiere = $('<span>Matières </span>').append($('<span></span>').addClass('glyphicon glyphicon-tags').attr('aria-hidden', 'true').attr('data-toggle', 'popMatiere').attr('data-trigger', 'manual').attr('title', 'Matières enseignées').attr('data-html', 'true').attr('data-content', transformObjectToArrayHTML(d['matieres'])));
                         var elemCanton = $('<span></span>').text('Canton: ' + d['canton']);
                         var elemStatut = $('<span>Statut: <img src="' + ((d['isOnline'] == true) ? green_circle : red_circle) + '" alt="Statut connexion" height="20" width="20"></span>');
                         var elemTarif = $('<span></span>').text(d['tarif'] + ' CHF/Heure');
@@ -139,8 +139,8 @@ $matiere = $_POST['inputSearch'];
                                           }
                                       }
                                   }
-                                  elemDispo.append($('<span></span>').attr('id', d['pseudo'] + '_' + (dateLoop.getMonth() + 1) + '-' + dateLoop.getDate() + '-' + dateLoop.getFullYear()).attr('data-container', 'body').attr('data-toggle', 'overpop').attr('data-trigger', 'hover').attr('data-placement', 'bottom').attr('data-content', '_').css('color', ((isDayFree) ? 'green' : 'red')).text(week[dateLoop.getDay()].substring(0, 2) + ' '));
-
+                                  elemDispo.append($('<span></span>').attr('id', d['pseudo'] + '_' + (dateLoop.getMonth() + 1) + '-' + dateLoop.getDate() + '-' + dateLoop.getFullYear()).attr('data-container', 'body').attr('data-toggle', 'overpop').attr('data-trigger', 'manual').attr('data-placement', 'bottom').attr('data-content', '_').css('color', ((isDayFree) ? 'green' : 'red')).text(week[dateLoop.getDay()].substring(0, 2) + ' '));                                  
+                                  
                                   dateLoop.setDate(dateLoop.getDate() + 1);
                                   isDayFree = false;
                               }
@@ -162,7 +162,7 @@ $matiere = $_POST['inputSearch'];
                               $('#divContainer').append(elemCoach);
 
                               $('[data-toggle="popMatiere"]').popover();
-                              $('[data-toggle="overpop"]').popover({html: true});
+                              $('[data-toggle="overpop"]').popover({html: true });
 
                               $('[data-toggle="overpop"]').each(function () {
                                   // Compare si le texte n'est pas rouge
@@ -234,8 +234,8 @@ $matiere = $_POST['inputSearch'];
                   });
 
 
-
-                  $('#divContainer').on('show.bs.popover', '[data-toggle="overpop"]', function () {
+                  // Recupère les heures disponible quand on survole le label et affiche la popover
+                  $('#divContainer').on('mouseover', '[data-toggle="overpop"]', function () {
                       var idSpan = $(this)[0].id;
                       var pseudo = $(this)[0].id.toString().split('_')[0];
                       var dateRef = $(this)[0].id.toString().split('_')[1];
@@ -268,15 +268,18 @@ $matiere = $_POST['inputSearch'];
                         }
                       );
 
-
-
-                      // TODO: Problème avec PopOver qui se met à jour que au deuxieme survol ===========
                       promiseOfIdPseudo.then(function () {
                           return promiseOfTabHours;
                       }).then(function (myDataPop) {
                           $('#' + idSpan).attr('data-content', transformObjectToArrayHTML(myDataPop.objectDate));
+                          $('#' + idSpan).popover('show');
                       });
-                      // ================================================================
+                  });
+                  
+                  // Ferme la popover quand la souris n'est plus au dessus de l'élément
+                  $('#divContainer').on('mouseleave', '[data-toggle="overpop"]', function () {
+                      var idSpan = $(this)[0].id;
+                      $('#' + idSpan).popover('hide');
                   });
 
 
