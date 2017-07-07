@@ -32,7 +32,7 @@ $matiere = $_POST['inputSearch'];
         <!-- End Fixed navbar -->
 
         <div id="divContainer" class="container">
-            <div id="alertPopUp" role="alert"></div>
+            <div id="alertPopUpCalendar" role="alert"></div>
             <h2 class="text-center">Résultats pour: <?php echo $matiere; ?></h2>
 
 
@@ -57,44 +57,50 @@ $matiere = $_POST['inputSearch'];
         <script src="./assets/js/calendar.js"></script>
 
         <script type="text/javascript">
-            var green_circle = "./assets/img/green_circle.svg";
-            var red_circle = "./assets/img/red_circle.svg";
+              var green_circle = "./assets/img/green_circle.svg";
+              var red_circle = "./assets/img/red_circle.svg";
 
-            var promiseOfNotation;
-            var promiseOfDispo;
+              var promiseOfNotation;
+              var promiseOfDispo;
 
-            var promiseOfPlanning;
+              var promiseOfPlanning;
 
-            var tabPlanning, dateLoop = null;
-            var week = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+              var tabPlanning, dateLoop = null;
+              var week = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
 
+              var tarifCoach = [];
 
-            var date = new Date();
-            //date.setUTCHours(date.getUTCHours() + 2);
+              var date = new Date();
+              //date.setUTCHours(date.getUTCHours() + 2);
 
-            var dateLimitRef = new Date(date);
-            dateLimitRef.setDate(date.getDate() + 6);
+              var dateLimitRef = new Date(date);
+              dateLimitRef.setDate(date.getDate() + 6);
 
-            dateLoop = new Date(date);
+              dateLoop = new Date(date);
 
-            function transformObjectToArrayHTML(stringList) {
-                var tmp = '';
+              function transformObjectToArrayHTML(stringList) {
+                  var tmp = '';
 
-                for (var index in stringList) {
-                    tmp += (stringList[index] + '<br/>');
-                }
+                  for (var index in stringList) {
+                      tmp += (stringList[index] + '<br/>');
+                  }
 
-                return tmp;
-            }
+                  return tmp;
+              }
 
-            // Recupère les coachs
-            $.getJSON(
+              // Recupère les coachs
+              $.getJSON(
                 'http://localhost:4242/getCoaches/<?php echo $matiere; ?>',
                 function (data) {
                     //console.log(data);
                     $.each(data, function (index, d) {
+                        // TODO: Compléter les informations des utilisateurs dans un tableau et l'affiche ensuite.
+                        //       Pour pouvoir ensuite utiliser les filtres plus facilement avec JavaScript
+                        
                         var elemCoach = $('<div></div>').addClass('listCoach').addClass('table-responsive').attr('id', d['pseudo']);
                         var elemTabBody = $('<table></table').addClass('table');
+
+                        tarifCoach[d['pseudo']] = d['tarif'];
 
                         var elemImage = $('<img>').addClass('img-responsive').attr('src', './memoire_tb_pereira/img/draft.png').attr('alt', 'Image de profil').attr('height', 128).attr('width', 128);
                         var elemName = $('<span></span>').text(d['prenom'] + ' ' + d['nom']);
@@ -109,194 +115,207 @@ $matiere = $_POST['inputSearch'];
 
                         promiseOfNotation = $.post('http://localhost:4242/getNotation', {
                             id_coach: d['_id']},
-                            function (dataNotation) {
-                                elemNote.append('Note: ' + ((dataNotation == null) ? 'Pas de notes' : '<strong>' + dataNotation + '/10</strong>'));
-                            }
+                          function (dataNotation) {
+                              elemNote.append('Note: ' + ((dataNotation == null) ? 'Pas de notes' : '<strong>' + dataNotation + '/10</strong>'));
+                          }
                         );
 
                         promiseOfDispo = $.post('http://localhost:4242/getPlanning', {
                             id_coach: d['_id'],
                             dateLimit: dateLimitRef.toISOString(),
                             dateNow: date.toISOString()},
-                            function (dataPlanning) {
-                                const tabDefault = [null, null, null, null, null, null, null, null, false, false, false, false, false, false, false, false, false, false, false, false, false];
-                                var isDayFree = false;
+                          function (dataPlanning) {
+                              const tabDefault = [null, null, null, null, null, null, null, null, false, false, false, false, false, false, false, false, false, false, false, false, false];
+                              var isDayFree = false;
 
-                                for (var i = 0; i < 7; i++) {
-                                    var tmpTab = tabDefault;
-                                    for (var j = 0; j < dataPlanning.length; j++) {
-                                        var tmpDate = new Date(dataPlanning[j].date);
-                                        if (dateLoop.getDay() === tmpDate.getDay()) {
-                                            if (dataPlanning[j].isFree) {
-                                                tmpTab[tmpDate.getUTCHours()] = dataPlanning[j].isFree;
-                                                isDayFree = true;
-                                            }
-                                        }
-                                    }
-                                    elemDispo.append($('<span></span>').attr('id', d['pseudo'] + '_' + (dateLoop.getMonth() + 1) + '-' + dateLoop.getDate() + '-' + dateLoop.getFullYear()).attr('data-container', 'body').attr('data-toggle', 'overpop').attr('data-trigger', 'hover').attr('data-placement', 'bottom').attr('data-content', '_').css('color', ((isDayFree) ? 'green' : 'red')).text(week[dateLoop.getDay()].substring(0, 2) + ' '));
+                              for (var i = 0; i < 7; i++) {
+                                  var tmpTab = tabDefault;
+                                  for (var j = 0; j < dataPlanning.length; j++) {
+                                      var tmpDate = new Date(dataPlanning[j].date);
+                                      if (dateLoop.getDay() === tmpDate.getDay()) {
+                                          if (dataPlanning[j].isFree) {
+                                              tmpTab[tmpDate.getUTCHours()] = dataPlanning[j].isFree;
+                                              isDayFree = true;
+                                          }
+                                      }
+                                  }
+                                  elemDispo.append($('<span></span>').attr('id', d['pseudo'] + '_' + (dateLoop.getMonth() + 1) + '-' + dateLoop.getDate() + '-' + dateLoop.getFullYear()).attr('data-container', 'body').attr('data-toggle', 'overpop').attr('data-trigger', 'hover').attr('data-placement', 'bottom').attr('data-content', '_').css('color', ((isDayFree) ? 'green' : 'red')).text(week[dateLoop.getDay()].substring(0, 2) + ' '));
 
-                                    dateLoop.setDate(dateLoop.getDate() + 1);
-                                    isDayFree = false;
-                                }
-                                dateLoop = new Date(date);
-                            }
+                                  dateLoop.setDate(dateLoop.getDate() + 1);
+                                  isDayFree = false;
+                              }
+                              dateLoop = new Date(date);
+                          }
                         );
 
                         promiseOfNotation.then(function () {
                             return promiseOfDispo;
                         })
-                            .then(function () {
-                                elemTabBody.append('<tr><td class="col-md-2" rowspan="5">' + elemImage[0].outerHTML + '</td></tr>\n\
+                          .then(function () {
+                              elemTabBody.append('<tr><td class="col-md-2" rowspan="5">' + elemImage[0].outerHTML + '</td></tr>\n\
 <tr><td class="col-md-2">' + elemName[0].outerHTML + '</td><td class="col-md-2"><input type="text" value="' + d['_id'] + '" hidden/></td><td class="col-md-4"></td><td class="col-md-2"></td></tr>\n\
-<tr><td class="col-md-2">' + elemMatiere[0].outerHTML + '</td><td class="col-md-2">' + elemTarif[0].outerHTML + '</td><td class="col-md-4"></td><td class="col-md-2" rowspan="2">' + elemRDV[0].outerHTML + '</td></tr>\n\
+<tr><td class="col-md-2">' + elemMatiere[0].outerHTML + '</td><td class="col-md-2">' + elemTarif[0].outerHTML + '</td><td class="col-md-4">Disponibilités:</td><td class="col-md-2" rowspan="2">' + elemRDV[0].outerHTML + '</td></tr>\n\
 <tr><td class="col-md-2">' + elemCanton[0].outerHTML + '</td><td class="col-md-2">' + elemNote[0].outerHTML + '</td><td class="col-md-4">' + elemDispo[0].outerHTML + '</td></tr>\n\
 <tr><td class="col-md-2">' + elemStatut[0].outerHTML + '</td><td class="col-md-2"></td><td class="col-md-4"></td><td class="col-md-2"></td></tr>');
 
-                                elemCoach.append(elemTabBody);
-                                $('#divContainer').append(elemCoach);
+                              elemCoach.append(elemTabBody);
+                              $('#divContainer').append(elemCoach);
 
-                                $('[data-toggle="popMatiere"]').popover();
-                                $('[data-toggle="overpop"]').popover({html: true});
+                              $('[data-toggle="popMatiere"]').popover();
+                              $('[data-toggle="overpop"]').popover({html: true});
 
-                                $('[data-toggle="overpop"]').each(function () {
-                                    // Compare si le texte n'est pas rouge
-                                    if ($(this).css("color") == 'rgb(255, 0, 0)') {
-                                        $('#' + $(this)[0].id).popover('disable');
-                                    }
-                                });
-                            });
+                              $('[data-toggle="overpop"]').each(function () {
+                                  // Compare si le texte n'est pas rouge
+                                  if ($(this).css("color") == 'rgb(255, 0, 0)') {
+                                      $('#' + $(this)[0].id).popover('disable');
+                                  }
+                              });
+                          });
                     });
                 }
-            );
+              );
 
-            jQuery(document).ready(function ($) {
-                $('#rsvCalendar').fullCalendar({
-                    locale: 'fr',
-                    // enable theme
-                    theme: true,
-                    // emphasizes business hours
-                    businessHours: true,
-                    // header
-                    header: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'month,agendaWeek,agendaDay'},
-                    selectable: true,
+              jQuery(document).ready(function ($) {
+                  $('#rsvCalendar').fullCalendar({
+                      locale: 'fr',
+                      // enable theme
+                      theme: true,
+                      // emphasizes business hours
+                      businessHours: true,
+                      // header
+                      header: {
+                          left: 'prev,next today',
+                          center: 'title',
+                          right: 'month,agendaWeek,agendaDay'},
+                      selectable: true,
 
-                    eventLimit: true,
+                      eventLimit: true,
 
-                    eventSources: [],
+                      eventSources: [],
 
-                    eventClick: function (calEvent, jsEvent, view) {
-                        if (calEvent.editable) {
-                            // TODO: Vérifier avec une alerte si l'utilisateur veut vraiment réservé cette période
-                            var idMeeting = calEvent.id;
-                            var idStudent = '<?php
-                                if (isset($_SESSION['_id'])) {
-                                    echo $_SESSION['_id'];
-                                }
-                                ?>';
-                            $.get(
-                                'http://localhost:4242/getMatiereIDByName/<?php echo $matiere; ?>',
-                                function (mat) {
-                                    $.post('http://localhost:4242/makeMeeting', {
-                                        idMeeting: idMeeting,
-                                        idStudent: idStudent,
-                                        idMatiere: mat[0]._id},
-                                        function (data) {
-                                            console.log(data);
+                      eventClick: function (calEvent, jsEvent, view) {
+                          var pseudoCoach = $('#pseudoText').val();
+                          if (calEvent.editable) {
+                              if (tarifCoach[pseudoCoach] <= parseInt('<?php echo $_SESSION['soldes']; ?>')) {
+                                  if (confirm("Voulez-vous réserver la séance à " + moment(calEvent.start).format("HH:mm") + "?")) {
+                                      var idMeeting = calEvent.id;
+                                      var idStudent = '<?php
+                                                            if (isset($_SESSION['_id'])) {
+                                                                echo $_SESSION['_id'];
+                                                            }
+                                                        ?>';
+                                      $.get(
+                                        'http://localhost:4242/getMatiereIDByName/<?php echo $matiere; ?>',
+                                        function (mat) {
+                                            console.log(mat);
+                                            $.post('http://localhost:4242/makeMeeting', {
+                                                idMeeting: idMeeting,
+                                                idStudent: idStudent,
+                                                idMatiere: mat[0]._id
+                                            },
+                                              function (data) {
+                                                  console.log(data);
+                                                  $('#rsvCalendar').fullCalendar('refetchEvents');
+
+                                                  $('#myCalendar').modal('hide');
+                                                  $("#alertPopUpCalendar").attr('class', 'alert alert-success alert-dismissible');
+                                                  $("#alertPopUpCalendar").empty();
+                                                  $("#alertPopUpCalendar").append("Votre rendez-vous a été marqué pour le " + moment(calEvent.start).format("DD MMMM YYYY") + " à " + moment(calEvent.start).format("HH:mm"));
+                                              }
+                                            );
                                         }
-                                    );
-                                }
-                            );
-                        }
+                                      );
+                                  }
+                              } else {
+                                  alert('Votre soldes ne permet pas de réserver une heure avec ce coach');
+                              }
+                          }                          
+                      }
+                  });
 
-                        $(this).css('border-color', 'red');
-                    }
-                });
 
-                
 
-                $('#divContainer').on('show.bs.popover', '[data-toggle="overpop"]', function () {                    
-                    var idSpan = $(this)[0].id;
-                    var pseudo = $(this)[0].id.toString().split('_')[0];
-                    var dateRef = $(this)[0].id.toString().split('_')[1];
-                    var promiseOfTabHours, promiseOfIdPseudo;
-                    var objectDate = [];
+                  $('#divContainer').on('show.bs.popover', '[data-toggle="overpop"]', function () {
+                      var idSpan = $(this)[0].id;
+                      var pseudo = $(this)[0].id.toString().split('_')[0];
+                      var dateRef = $(this)[0].id.toString().split('_')[1];
+                      $('#pseudoText').val(pseudo);
+                      var promiseOfTabHours, promiseOfIdPseudo;
+                      var objectDate = [];
 
-                    var myDate = new Date(dateRef);
+                      var myDate = new Date(dateRef);
 
-                    var myDateLimitRef = new Date(myDate);
-                    myDateLimitRef.setDate(myDate.getDate() + 1);
+                      var myDateLimitRef = new Date(myDate);
+                      myDateLimitRef.setDate(myDate.getDate() + 1);
 
-                    promiseOfIdPseudo = $.get('http://localhost:4242/getIdByPseudo/' + pseudo,
+                      promiseOfIdPseudo = $.get('http://localhost:4242/getIdByPseudo/' + pseudo,
                         function (user) {
                             promiseOfTabHours = $.post('http://localhost:4242/getPlanning', {
                                 id_coach: user[0]._id,
                                 dateLimit: myDateLimitRef.toISOString(),
                                 dateNow: myDate.toISOString()},
-                                function (dataPop) {
-                                    for (var j = 0; j < dataPop.length; j++) {
-                                        var tmpDate = new Date(dataPop[j].date);
-                                        if (dataPop[j].isFree) {
-                                            var momentDate = moment(tmpDate);
-                                            objectDate.push(momentDate.format('HH') + ':' + momentDate.format('mm'));
-                                        }
-                                    }
-                                    dataPop.objectDate = objectDate;
-                                }
+                              function (dataPop) {
+                                  for (var j = 0; j < dataPop.length; j++) {
+                                      var tmpDate = new Date(dataPop[j].date);
+                                      if (dataPop[j].isFree) {
+                                          var momentDate = moment(tmpDate);
+                                          objectDate.push(momentDate.format('HH') + ':' + momentDate.format('mm'));
+                                      }
+                                  }
+                                  dataPop.objectDate = objectDate;
+                              }
                             );
                         }
-                    );
+                      );
 
-                    
-                    
-                    // TODO: Problème avec PopOver qui se met à jour que au deuxieme survol ===========
-                    promiseOfIdPseudo.then(function () {
-                        return promiseOfTabHours; 
-                    }).then(function (myDataPop) { 
-                        $('#' + idSpan).attr('data-content', transformObjectToArrayHTML(myDataPop.objectDate));
-                    });                   
-                    // ================================================================
-                });
-                
-                
 
-                $('#divContainer').on('click', '[name="rsv"]', function () {                
-                    var idCoach = $(this)[0].parentNode.parentNode.parentNode.childNodes[2].childNodes[1].childNodes[0].value;
-                    var name = $(this)[0].parentNode.parentNode.parentNode.childNodes[2].childNodes[0].childNodes[0];
-                    var fullName = name.outerHTML.substr(6, name.outerHTML.length - 13);
 
-                    promiseOfPlanning = $.post('http://localhost:4242/getPlanning', {
-                        id_coach: idCoach,
-                        dateNow: date.toISOString()},
+                      // TODO: Problème avec PopOver qui se met à jour que au deuxieme survol ===========
+                      promiseOfIdPseudo.then(function () {
+                          return promiseOfTabHours;
+                      }).then(function (myDataPop) {
+                          $('#' + idSpan).attr('data-content', transformObjectToArrayHTML(myDataPop.objectDate));
+                      });
+                      // ================================================================
+                  });
+
+
+
+                  $('#divContainer').on('click', '[name="rsv"]', function () {
+                      var idCoach = $(this)[0].parentNode.parentNode.parentNode.childNodes[2].childNodes[1].childNodes[0].value;
+                      var name = $(this)[0].parentNode.parentNode.parentNode.childNodes[2].childNodes[0].childNodes[0];
+                      var fullName = name.outerHTML.substr(6, name.outerHTML.length - 13);
+
+                      promiseOfPlanning = $.post('http://localhost:4242/getPlanning', {
+                          id_coach: idCoach,
+                          dateNow: date.toISOString()},
                         function (data) {
-                            $.each(data, function (index, d) {                                
-                                var myTitle = (d['isFree'] == true) ? "Libre" : "Occupé";
+                            $.each(data, function (index, d) {
+                                var myTitle = (d['isFree'] == true) ? "Libre" : (d['id_student'] == '<?php echo $_SESSION['_id']; ?>') ? '<?php echo $_SESSION['pseudo']; ?>' : 'Occupé';
                                 var myStart = new Date(d['date']);
                                 var myEnd = transformDateStartToEnd(myStart, d['duration']);
                                 var myColor = ((myTitle == "Libre") ? "#1E9C1E" : "#FF0000");
                                 var isEditable = (d['isFree'] == true) ? true : false;
-                                tabEvents.push({id: d['_id'], title: myTitle, start: myStart, end: myEnd, color: myColor, editable: isEditable});                                
+                                tabEvents.push({id: d['_id'], title: myTitle, start: myStart, end: myEnd, color: myColor, editable: isEditable});
                             });
                         }
-                    );
+                      );
 
-                    promiseOfPlanning.then(function () {
-                        console.log(tabEvents);
-                        $('#rsvCalendar').fullCalendar('removeEvents');
-                        $('#rsvCalendar').fullCalendar('addEventSource', tabEvents);
-                        $('#rsvCalendar').fullCalendar('refetchEvents');
-                        $('#pseudoText').text(' - ' + fullName);
-                        $('#myCalendar').modal('show');
-                    });
-                });              
+                      promiseOfPlanning.then(function () {
+                          console.log(tabEvents);
+                          $('#rsvCalendar').fullCalendar('removeEvents');
+                          $('#rsvCalendar').fullCalendar('addEventSource', tabEvents);
+                          $('#rsvCalendar').fullCalendar('refetchEvents');
+                          $('#fullNameText').text(' - ' + fullName);
+                          $('#myCalendar').modal('show');
+                      });
+                  });
 
-                $('#myCalendar').on('hide.bs.modal', function (e) {
-                    tabEvents = [];
-                    $('#rsvCalendar').fullCalendar('removeEvents');
-                });
-            });
+                  $('#myCalendar').on('hide.bs.modal', function (e) {
+                      tabEvents = [];
+                      $('#rsvCalendar').fullCalendar('removeEvents');
+                  });
+              });
         </script>
     </body>
 </html>

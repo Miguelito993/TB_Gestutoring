@@ -139,7 +139,7 @@ var changeStatus = function (db, info, callback) {
 var getCoaches = function (db, matiere, callback) {
     var collection = db.collection('t_users');
 
-    collection.find({type: "Coach", isValid: true, matieres: matiere}).toArray(
+    collection.find({type: "Coach", isValid: true, matieres: matiere}).sort({tarif: 1}).toArray(
         function (err, docs) {
             assert.equal(err, null);
             callback(docs);
@@ -150,7 +150,7 @@ var getCoaches = function (db, matiere, callback) {
 var getNotation = function (db, info, callback) {
     var collection = db.collection('t_notations');
 
-    collection.find({id_user: ObjectId(info.id)}, {notation: 1}).toArray(
+    collection.find({id_coach: ObjectId(info.id)}, {notation: 1}).toArray(
         function (err, docs) {
             assert.equal(err, null);
             callback(docs);
@@ -281,7 +281,7 @@ var submitNotation = function (db, info, callback) {
     collection.insertOne({
         notation: parseInt(info.note),
         description: ent.encode(info.comment),
-        id_user: ObjectId(info.idUser)
+        id_coach: ObjectId(info.idUser)
     }, function (err, docs) {
         assert.equal(err, null);
         callback(docs);
@@ -476,7 +476,7 @@ app.get('/getCoaches/:matiere', function (req, res) {
 });
 
 app.post('/getNotation', function (req, res) {
-    var info = {"id": req.body.id_user};
+    var info = {"id": req.body.id_coach};
 
     if (info.id != null) {
         MongoClient.connect(urlDB, function (err, db) {
@@ -626,9 +626,9 @@ app.get('/getMatiereByID/:idMatiere', function (req, res) {
 });
 
 app.post('/submitNotation', function (req, res) {
-    var info = {"note": req.body.note, "comment": req.body.comment, "idUser": req.body.idUser};
+    var info = {"note": req.body.note, "comment": req.body.comment, "id_coach": req.body.id_coach};
 
-    if ((info.note != null) && (info.idUser != null)) {
+    if ((info.note != null) && (info.id_coach != null)) {
         MongoClient.connect(urlDB, function (err, db) {
             assert.equal(err, null);
 
@@ -656,7 +656,7 @@ app.get('/getMatiereIDByName/:matiere', function (req, res) {
 app.post('/makeMeeting', function (req, res) {
     var info = {"idMeeting": req.body.idMeeting, "idStudent": req.body.idStudent, "idMatiere": req.body.idMatiere};
 
-    if ((info.idMeeting != null) && (info.idStudent != null) && (idMatiere != null)) {
+    if ((info.idMeeting != null) && (info.idStudent != null) && (info.idMatiere != null)) {
         MongoClient.connect(urlDB, function (err, db) {
             assert.equal(err, null);
 

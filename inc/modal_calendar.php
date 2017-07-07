@@ -3,12 +3,10 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="myCalendarLabel">Réserver une session <small id="pseudoText"></small></h4>
+                <h4 class="modal-title" id="myCalendarLabel">Réserver une session <small id="fullNameText"></small><input type="text" id="pseudoText" hidden/></h4>
             </div>
             <form method="post" id="CalendarForm" class="form-horizontal">  
-                <div class="modal-body">
-                    <div id="alertPopUpCalendar" role="alert">
-                    </div>   
+                <div class="modal-body">                     
 
                     <div id="rsvCalendar"></div>                    
                                 
