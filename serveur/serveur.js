@@ -28,6 +28,8 @@ var app = require('express')(),
 
 var storage = multer.diskStorage({
     destination: function (req, file, callback) {
+        //TODO: pour les images vérifier le champ file.mimetype et appeller la callback correspondante au dossier
+        //console.log(util.inspect(file, {showHidden: true, depth: null, colors: true}));
         callback(null, './uploads');
     },
     filename: function (req, file, callback) {
@@ -666,6 +668,34 @@ app.post('/makeMeeting', function (req, res) {
             });
         });
     }
+});
+
+app.get('/getFile/:type/:name', function (req, res) {
+    var fileName = req.params.name;
+    var typeFile = req.params.type;
+    
+    var options = {
+    root: __dirname + '/'+typeFile+'/',
+    dotfiles: 'deny',
+    headers: {
+        'x-timestamp': Date.now(),
+        'x-sent': true
+    }
+  };
+
+  var fileName = req.params.name;
+  var access = true
+  
+  if (access) {
+	  res.sendFile(fileName, options, function (err) {
+		assert.equal(err, null);        
+		console.log('Sent:', fileName);		
+	  });
+  } else {
+	res.status(400);
+	res.send('None shall pass');
+  }
+
 });
 
 app.use('/peerjs', ExpressPeerServer(server, {debug: true}));
