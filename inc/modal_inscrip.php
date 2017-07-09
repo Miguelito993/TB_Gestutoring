@@ -30,7 +30,7 @@
                             <input type="email" class="form-control" id="inputEmail" name="inputEmail" required>
                         </div>
                     </div>
-
+                    
                     <div class="form-group">
                         <label for="inputPseudo" class="col-sm-2 control-label">Pseudo</label>
                         <div class="col-sm-8">
@@ -104,7 +104,14 @@
                         </div>
                     </div>
 
-                    <!-- end Champ facultatif -->                        
+                    <!-- end Champ facultatif -->  
+                    <div class="form-group">
+                        <label for="inputImgProfile" class="col-sm-2 control-label">Image de profil</label>
+                        <div class="col-sm-8">
+                            <input type="file" id="inputImgProfile" name="inputImgProfile" required>
+                        </div>
+                    </div>
+                    
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>

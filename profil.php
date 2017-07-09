@@ -29,6 +29,7 @@ if (!isset($_SESSION['pseudo'])) {
         <!-- End Fixed navbar -->
 
         <div id="divContainer" class="container">
+            <div id="alertPopUpProfil" role="alert"></div>
             <div id="divInfoProfil" class="table-responsive">
                 <table class="table">  
                     <tr>
@@ -78,7 +79,7 @@ if (!isset($_SESSION['pseudo'])) {
                         $tarif = $_SESSION['tarif'];
                         $diplomes = "";
                         foreach ($_SESSION['diplomes'] as $value) {
-                            $diplomes .= '<a href="http://localhost:4242/getFile/uploads/' . $value . '" target="_blank">' . $value . '</a><br/>';
+                            $diplomes .= '<a href="http://localhost:4242/getFile/uploads/' . $value . '" target="_blank">' . $value . '</a> <span name="disDiplome" id="' . $value . '" class="glyphicon glyphicon-remove" aria-hidden="true"></span><br/>';
                         }
                         echo "<tr>
                                 <td>Tarif</td>
@@ -112,10 +113,28 @@ if (!isset($_SESSION['pseudo'])) {
                     </tr>
                 </table>
             </div>
-          
 
-            <div id="calendar"></div>
-
+            <table class="table">
+                <tr>
+                    <td>
+                        <h2>Planning</h2>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div id="calendar"></div>
+                    </td>
+                </tr>
+            </table>
+            
+            <table id="lastActivities" class="table">
+                <tr>
+                    <td>
+                        <h2>Dernières activités</h2>
+                    </td>
+                </tr>
+                
+            </table>
 
         </div> <!-- /container -->   
 
@@ -133,6 +152,7 @@ if (!isset($_SESSION['pseudo'])) {
         <script src="./assets/js/locale-all.js"></script>
         <script src="./bootstrap/js/bootstrap.js"></script>
         <script src="./assets/js/calendar.js"></script>
+        <script src="./assets/js/sha1.js"></script>
 
         <script type="text/javascript">
 
@@ -151,7 +171,9 @@ if (!isset($_SESSION['pseudo'])) {
                       }
                   }
                   return tabDefault;
-              }              
+              }
+
+              var pwdChange = false;
 
               var date = new Date();
               //date.setUTCHours(date.getUTCHours() + 2);
@@ -184,20 +206,75 @@ if (!isset($_SESSION['pseudo'])) {
                       $('#imgProfil').attr('src', 'http://localhost:4242/getFile/img/<?php echo $_SESSION['img_profil']; ?>');
                   }
 
-                  $('#p_inputFirstname, #p_inputName, #p_inputEmail, #p_inputPassword, #p_inputCity, #p_inputEmailParent, #p_inputTarif, #p_inputMatiere').change(function(){                     
-                    $(this).css('border-color', 'blue');
-                    $('#btnSave').removeAttr('disabled');
-                  });
-              
-                  $('#btnSave').click(function(e){
-                      // On désactive le comportement par défaut du navigateur
-                      e.preventDefault();
-                      
-                      //TODO: Créer la route sur le serveur pour la modification de données
-                      console.log($('#p_inputMatiere').val());
+                  $('#p_inputFirstname, #p_inputName, #p_inputEmail, #p_inputPassword, #p_inputCity, #p_inputEmailParent, #p_inputTarif, #p_inputMatiere').change(function () {
+                      $(this).css('border-color', 'blue');
+                      if ($(this)[0].id == 'p_inputPassword') {
+                          pwdChange = true;
+                      }
+                      $('#btnSave').removeAttr('disabled');
                   });
 
-                                    
+                  $('span[name=disDiplome]').click(function (e) {
+                      // On désactive le comportement par défaut du navigateur
+                      e.preventDefault();
+                      var diplName = $(this)[0].id;
+
+                      $.post('http://localhost:4242/deleteDiplome', {
+                          id: '<?php echo $_SESSION['_id']; ?>',
+                          diplome: diplName
+                      },
+                        function (data) {
+                            window.location.href = "deleteElementSession.php?name_dipl=" + diplName;
+                        }
+                      );
+
+                  });
+
+                  $('#btnSave').click(function (e) {
+                      // On désactive le comportement par défaut du navigateur
+                      e.preventDefault();
+
+                      var firstname = $('#p_inputFirstname').val();
+                      var name = $('#p_inputName').val();
+                      var email = $('#p_inputEmail').val();
+                      var pwd = (pwdChange) ? sha1($('#p_inputPassword').val()) : $('#p_inputPassword').val();
+                      var city = $('#p_inputCity').val();
+                      var type = '<?php echo $_SESSION['type']; ?>';
+                      if (type == 'Coach') {
+                          var tarif = $('#p_inputTarif').val();
+                          var matiere = $('#p_inputMatiere').val();
+                      } else if (type == 'Student') {
+                          var emailParent = $('#p_inputEmailParent').val();
+                      }
+
+
+                      $.post('http://localhost:4242/modifyProfile', {
+                          id: '<?php echo $_SESSION['_id']; ?>',
+                          firstname: firstname,
+                          name: name,
+                          email: email,
+                          pwd: pwd,
+                          city: city,
+                          type: type,
+                          tarif: (type == 'Coach') ? tarif : null,
+                          matiere: (type == 'Coach') ? matiere : null,
+                          emailParent: (type == 'Student') ? emailParent : null
+                      },
+                        function (data) {
+                            if (data.ok == 1) {
+                                $("#alertPopUpProfil").attr('class', 'alert alert-success alert-dismissible');
+                                $("#alertPopUpProfil").empty();
+                                $("#alertPopUpProfil").append("Modification réussie, il faudra vous reconnecter pour appliquer les changements. Vous allez être déconnecté.");
+                                setTimeout(function () {
+                                    window.location.replace("logout.php");
+                                }, 5000);
+                            }
+
+                        }
+                      );
+                  });
+
+
                   // Rempli le formulaire des cantons
                   $.getJSON(
                     'http://localhost:4242/getDepartments',
@@ -217,7 +294,7 @@ if (!isset($_SESSION['pseudo'])) {
                   $.getJSON(
                     'http://localhost:4242/getMatieres',
                     function (data) {
-                        var tabMatiere = <?php echo json_encode($_SESSION['matieres']); ?>;                        
+                        var tabMatiere = <?php echo json_encode($_SESSION['matieres']); ?>;
 
                         $.each(data, function (index, d) {
                             if ($.inArray(d['name'], tabMatiere) != -1) {
@@ -228,6 +305,33 @@ if (!isset($_SESSION['pseudo'])) {
                         });
                     }
                   );
+                
+                  $.post('http://localhost:4242/getEndedMeeting', {
+                        type: '<?php echo $_SESSION['type']; ?>',
+                        myID: '<?php echo $_SESSION['_id']; ?>'
+                    },
+                        function (data) {
+                            console.log(data);                            
+                            
+                            $.each(data, function (index, d) {
+                                var myDate = moment(d['date']);
+                                $.getJSON('http://localhost:4242/getNamesById/' + d['id_coach'], function(data1){
+                                    var coach = data1[0]['prenom'] + ' ' +data1[0]['nom'];                                    
+                                    $.getJSON('http://localhost:4242/getNamesById/' + d['id_student'], function(data2){
+                                         var student = data2[0]['prenom'] + ' ' +data2[0]['nom'];
+                                         $.getJSON('http://localhost:4242/getMatiereByID/' + d['id_matiere'], function(data3){
+                                             var matiere = data3[0]['name'];
+                                             
+                                             var userDisplay = ('<?php echo $_SESSION['type']; ?>' == 'Coach')?student:coach;
+                                             $('#lastActivities').append('<tr><td>'+myDate.format("DD.MM.YYYY à HH:mm")+' : '+matiere+' avec '+userDisplay+'</td></tr>');
+                                             
+                                         });
+                                    });
+                                    
+                                });
+                            });                            
+                        }
+                    );
 
 
                   $('#calendar').fullCalendar({
@@ -308,7 +412,7 @@ if (!isset($_SESSION['pseudo'])) {
 
                   promiseOfProfil.then(function () {
                       return promiseOfGetPseudo;
-                  }).then(function(){                      
+                  }).then(function () {
                       console.log(tabEvents);
                       $('#calendar').fullCalendar('removeEvents');
                       $('#calendar').fullCalendar('addEventSource', tabEvents);
