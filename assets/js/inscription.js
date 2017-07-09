@@ -78,8 +78,8 @@ jQuery(document).ready(function ($) {
        
         
         var form = $('#inscripForm')[0];
-        var data = new FormData(form);
-
+        var data = new FormData(form);    
+        
         //TODO: Vérifier que les deux passwords sont identiques.
         //      Vérifier que le pseudo et le mail ne sont pas déjà présents dans la base de données.
 

@@ -178,24 +178,10 @@ session_start();
                     });
                     if (!meetingFound) {
                         alert('Vous n\'avez pas de rendez-vous prochainement');
-                        //window.location.replace('index.php');
-                        //document.location.href = 'index.php';
+                        window.location.replace('index.php');                        
                     }
                 }
-            );
-
-            /*
-             if ('<?php echo $_SESSION['pseudo']; ?>' == 'Alexterrieur') {
-             partner = 'IronMan';
-             } else if ('<?php echo $_SESSION['pseudo']; ?>' == 'IronMan') {
-             partner = 'Alexterrieur';
-             } else if ('<?php echo $_SESSION['pseudo']; ?>' == 'Thor') {
-             partner = 'Alainterrieur';
-             } else {
-             partner = 'Thor';
-             }
-             //var partner = ('<?php echo $_SESSION['pseudo']; ?>' == 'Alexterrieur')?'IronMan':'Alexterrieur';
-             */
+            );            
 
             var infoExtra = null;
             var spinner = new Spinner(opts).spin();
@@ -335,6 +321,8 @@ session_start();
                 console.log("Destroy peer");
                 console.log(peer);
                 //window.location.replace(index.php);
+                
+                //TODO: Prévoir d'afficher la durée de la session et l'argent dépensé/gagné
             }
                 
             /* 

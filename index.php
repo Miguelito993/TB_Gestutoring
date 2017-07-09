@@ -1,5 +1,5 @@
 <?php
-    session_start();
+session_start();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -12,6 +12,7 @@
         <link rel="stylesheet" href="./bootstrap/css/bootstrap-theme.css">
         <link rel="stylesheet" href="./bootstrap/css/theme.css">
         <link rel="stylesheet" href="./bootstrap/css/signin.css">
+        <link rel="stylesheet" href="./assets/css/session.css">
         <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
     </head>
     <body>
@@ -35,46 +36,91 @@
                     </div>
                     <input type="submit" id="submitSearch" name="submitSearch" class="btn btn-primary" value="Rechercher"/>
                 </div>
-            </form>
-               
-            <span id="IronMan_Je" data-container="body" data-toggle="pop_over" data-trigger="hover" data-placement="bottom">Je</span> 
-            <span id="IronMan_Ve" data-container="body" data-toggle="pop_over" data-trigger="hover" data-placement="bottom">Ve</span> 
-            <span id="IronMan_Sa" data-container="body" data-toggle="pop_over" data-trigger="hover" data-placement="bottom">Di</span> 
-            <span id="IronMan_Di" data-container="body" data-toggle="pop_over" data-trigger="hover" data-placement="bottom">Lu</span>
-            <span id="IronMan_Lu" data-container="body" data-toggle="pop_over" data-trigger="hover" data-placement="bottom">Ma</span> 
-            <span id="IronMan_Ma" data-container="body" data-toggle="pop_over" data-trigger="hover" data-placement="bottom">Me</span> 
+            </form>            
+           
+
         </div> <!-- /container -->
 
         <!-- Modal -->
         <?php
-            include './inc/modal_inscrip.php';
+        include './inc/modal_inscrip.php';
         ?>
         <!-- /Modal -->
 
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.11.1/moment.min.js"></script>
         <script src="./bootstrap/js/bootstrap.js"></script>
         <script src="./assets/js/connexion.js"></script>
         <script src="./assets/js/inscription.js"></script>
+        <script src="./assets/js/sha1.js"></script>
+        <script src="./assets/js/session.js"></script>
         <script type="text/javascript">
             var subject = [];
 
+            var matiere;
+            var pseudoPartner;
+
             // Rempli le formulaire des matières
             $.getJSON(
-                    'http://localhost:4242/getMatieres',
-                    function (data) {
-                        $.each(data, function (index, d) {
-                            subject.push(d['name']);
-                        });
-                    }
+                'http://localhost:4242/getMatieres',
+                function (data) {
+                    $.each(data, function (index, d) {
+                        subject.push(d['name']);
+                    });
+                }
             );
+          
+    
+    /*
+            $.get(
+                'http://localhost:4242/getMatiereIDByName/Géographie',
+                function (mat) {
+                    console.log(mat[0]._id);
+                }
+            );
+            
+           
+           
+            jQuery(document).ready(function ($) {
+                $('#imgTest').attr('src', 'http://localhost:4242/getFile/img/Thor.png');
+                $('#fileTest').attr('href', 'http://localhost:4242/getFile/uploads/dipl_CaptainAmerica_1499462340009.pdf');
+            });
+   
+             $.get(
+                'http://localhost:4242/getFile/img/Thor.png',
+                function (file) {
+                    console.log(file);
+                   $('#imgTest').attr('src', file);
+                }
+             );
+             
+             
+             $.get(                
+             'http://localhost:4242/getDataList/Anglais/593fcce24f53f02754cc352c',
+             function (data) {  
+             //console.log(data);
+             
+             
+             //var dataBlob = new Blob([data], {type: 'text/plain'});
+             //var dataFile = new File([data], "exercice.pdf", {type: "application/pdf", lastModified: Date.now()});
+             //console.log(dataBlob);
+             //console.log(dataFile);
+             //urlBlob = window.URL.createObjectURL(dataBlob);
+             //urlFile = window.URL.createObjectURL(dataFile);
+             //console.log(urlBlob);           
+             //console.log(urlFile);   
+             
+             }
+             ); 
+             */
+            // TODO: Essayer la méthode sur ce lien: https://stackoverflow.com/questions/22171510/how-to-download-pdf-using-nodejs-and-send-it-to-the-client
+            //          https://stackoverflow.com/questions/31105846/how-to-send-a-pdf-file-from-node-express-app-to-the-browser
 
             $('#inputSearch').autocomplete({
                 source: subject
             });
-            
-            $('[data-toggle="pop_over"]').popover({html: true, content: "Un <strong>exemple</strong>"});
-            
+
         </script>
     </body>
 </html>

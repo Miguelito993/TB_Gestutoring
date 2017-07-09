@@ -26,8 +26,7 @@ jQuery(document).ready(function ($) {
                                     console.log(data);
                                     //$('.navbar-right').hide();                  
                                     // Changé la page
-                                    //window.location.replace("index.php", 2000);
-                                    window.location.reload();
+                                    setTimeout(function(){window.location.replace("index.php");},2000);
                                     //$('#navMenu').load('./inc/inc_navigation.php');                                                                     
                                 }
                         );
@@ -35,9 +34,9 @@ jQuery(document).ready(function ($) {
                     } else if (data.status == 'Failed') {
                         $("#alertPopUp").attr('class', 'alert alert-danger alert-dismissible');
                         $("#alertPopUp").empty();
-                        $("#alertPopUp").append("Login/Password erroné");
+                        $("#alertPopUp").append("Combinaison Pseudo/Mot de passe erroné");
 
-                        $("#inputPassword").val("");
+                        $("#inputLogPassword").val("");
                     }
 
                 }

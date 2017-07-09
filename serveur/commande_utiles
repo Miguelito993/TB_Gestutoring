@@ -1,0 +1,19 @@
+Sélectionner une date inférieur à un jour donné:
+
+db.t_plannings.aggregate([{ $match: { id_coach: ObjectId("5937c8b523e4ab7c17e7d3bf")}}, { $project: { _id: "$_id", date : "$date", day: { $dayOfMonth: "$date"} } } ,{$match : {day: {$lt : 21}}} ,{ $sort: { day: 1 } }])
+
+
+Recupérer l'heure d'une date:
+
+db.t_plannings.aggregate([{ $project: { hour: {$hour: "$date"}}}])
+
+
+Calculer la date après 7 jours:
+
+db.t_plannings.aggregate([
+    { $match: { id_coach: ObjectId("5937c8b523e4ab7c17e7d3bf")}}, 
+    { $project: { _id: "$_id", date : "$date", dateRef: { $add: ["$date", 7*24*60*60000]} } }, 
+    { $match: {date : {$lt: ISODate("2017-06-21")}}} ,
+    { $sort: { day: 1 } }
+])
+
