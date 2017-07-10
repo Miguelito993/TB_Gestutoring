@@ -6,7 +6,9 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="./index.php">GesTutoring</a>
+            <a class="navbar-brand" href="./index.php">
+                <span><img alt="Logo" height="35" width="35" src="./assets/img/logo_GesTutoring.ico"></span>GesTutoring
+            </a>
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <?php

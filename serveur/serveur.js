@@ -165,7 +165,7 @@
   }
 
   var getCoaches = function (db, matiere, callback) {
-      var collection = db.collection('t_users');
+      var collection = db.collection('t_users');     
 
       collection.find({type: "Coach", isValid: true, matieres: matiere}).sort({tarif: 1}).toArray(
         function (err, docs) {
