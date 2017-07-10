@@ -1,6 +1,5 @@
 <?php
 session_start();
-
 if (!isset($_POST['submitSearch'])) {
     header('Location: index.php');
     exit();
@@ -33,7 +32,14 @@ $matiere = $_POST['inputSearch'];
 
         <div id="divContainer" class="container">
             <div id="alertPopUpCalendar" role="alert"></div>
-            <h2 class="text-center">Résultats pour: <?php echo $matiere; ?></h2>
+            <table>
+                <tr>
+                    <td class="col-xs-2"><a id="linkPrevious"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span> Revenir à l'accueil</a></td>
+                    <td class="col-xs-6"><h2 class="text-center">Résultats pour: <?php echo $matiere; ?></h2></td>
+                    <td class="col-xs-2"><select id="filterStatut" name="optionFilter" class="form-control"><option disabled selected>Statut</option><option value="1">Tous</option><option value="2">En ligne</option><option value="3">Hors-ligne</option></select></td>
+                    <td class="col-xs-2"><select id="triCoaches" name="optionFilter" class="form-control"><option disabled selected>Filtre</option><option value="1">Prix croissant</option><option value="2">Prix décroissant</option><option value="3">Note croissante</option><option value="4">Note décroissante</option></select></td>
+                </tr>
+            </table>
 
 
         </div> <!-- /container -->
@@ -69,6 +75,7 @@ $matiere = $_POST['inputSearch'];
               var week = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
 
               var tarifCoach = [];
+              var resultRequest;
 
               var date = new Date();
               //date.setUTCHours(date.getUTCHours() + 2);
@@ -92,19 +99,20 @@ $matiere = $_POST['inputSearch'];
               $.getJSON(
                 'http://localhost:4242/getCoaches/<?php echo $matiere; ?>',
                 function (data) {
-                    //console.log(data);
+                    resultRequest = data;
+
                     $.each(data, function (index, d) {
                         // TODO: Compléter les informations des utilisateurs dans un tableau et l'affiche ensuite.
                         //       Pour pouvoir ensuite utiliser les filtres plus facilement avec JavaScript
-                        
+
                         var elemCoach = $('<div></div>').addClass('listCoach').addClass('table-responsive').attr('id', d['pseudo']);
                         var elemTabBody = $('<table></table').addClass('table');
 
                         tarifCoach[d['pseudo']] = d['tarif'];
 
-                        var elemImage = $('<img>').addClass('img-responsive').attr('src', './memoire_tb_pereira/img/draft.png').attr('alt', 'Image de profil').attr('height', 128).attr('width', 128);
+                        var elemImage = $('<img>').addClass('img-responsive').attr('src', 'http://localhost:4242/getFile/img/' + d['img_profil']).attr('alt', 'Image de profil').attr('height', 128).attr('width', 128);
                         var elemName = $('<span></span>').text(d['prenom'] + ' ' + d['nom']);
-                        var elemMatiere = $('<span>Matières </span>').append($('<span></span>').addClass('glyphicon glyphicon-tags').attr('aria-hidden', 'true').attr('data-toggle', 'popMatiere').attr('data-trigger', 'manual').attr('title', 'Matières enseignées').attr('data-html', 'true').attr('data-content', transformObjectToArrayHTML(d['matieres'])));
+                        var elemMatiere = $('<span>Matières </span>').append($('<span></span>').addClass('glyphicon glyphicon-tags').attr('aria-hidden', 'true').attr('data-toggle', 'popMatiere').attr('data-trigger', 'hover').attr('title', 'Matières enseignées').attr('data-html', 'true').attr('data-content', transformObjectToArrayHTML(d['matieres'])));
                         var elemCanton = $('<span></span>').text('Canton: ' + d['canton']);
                         var elemStatut = $('<span>Statut: <img src="' + ((d['isOnline'] == true) ? green_circle : red_circle) + '" alt="Statut connexion" height="20" width="20"></span>');
                         var elemTarif = $('<span></span>').text(d['tarif'] + ' CHF/Heure');
@@ -116,6 +124,7 @@ $matiere = $_POST['inputSearch'];
                         promiseOfNotation = $.post('http://localhost:4242/getNotation', {
                             id_coach: d['_id']},
                           function (dataNotation) {
+                              resultRequest[index].note = ((dataNotation == null) ? null : dataNotation);
                               elemNote.append('Note: ' + ((dataNotation == null) ? 'Pas de notes' : '<strong>' + dataNotation + '/10</strong>'));
                           }
                         );
@@ -139,8 +148,8 @@ $matiere = $_POST['inputSearch'];
                                           }
                                       }
                                   }
-                                  elemDispo.append($('<span></span>').attr('id', d['pseudo'] + '_' + (dateLoop.getMonth() + 1) + '-' + dateLoop.getDate() + '-' + dateLoop.getFullYear()).attr('data-container', 'body').attr('data-toggle', 'overpop').attr('data-trigger', 'manual').attr('data-placement', 'bottom').attr('data-content', '_').css('color', ((isDayFree) ? 'green' : 'red')).text(week[dateLoop.getDay()].substring(0, 2) + ' '));                                  
-                                  
+                                  elemDispo.append($('<span></span>').attr('id', d['pseudo'] + '_' + (dateLoop.getMonth() + 1) + '-' + dateLoop.getDate() + '-' + dateLoop.getFullYear()).attr('data-container', 'body').attr('data-toggle', 'overpop').attr('data-trigger', 'manual').attr('data-placement', 'bottom').attr('data-content', '_').css('color', ((isDayFree) ? 'green' : 'red')).text(week[dateLoop.getDay()].substring(0, 2) + ' '));
+
                                   dateLoop.setDate(dateLoop.getDate() + 1);
                                   isDayFree = false;
                               }
@@ -162,7 +171,7 @@ $matiere = $_POST['inputSearch'];
                               $('#divContainer').append(elemCoach);
 
                               $('[data-toggle="popMatiere"]').popover();
-                              $('[data-toggle="overpop"]').popover({html: true });
+                              $('[data-toggle="overpop"]').popover({html: true});
 
                               $('[data-toggle="overpop"]').each(function () {
                                   // Compare si le texte n'est pas rouge
@@ -229,8 +238,131 @@ $matiere = $_POST['inputSearch'];
                               } else {
                                   alert('Votre soldes ne permet pas de réserver une heure avec ce coach');
                               }
-                          }                          
+                          }
                       }
+                  });
+
+                  $('select[name=optionFilter]').change(function () {
+                      var filterChoice = $('#filterStatut option:selected').text();
+                      var triChoice = $('#triCoaches option:selected').text();
+                      var dataTri = resultRequest;
+
+                      for (var i = 0; i < dataTri.length; i++) {
+                          $('#' + dataTri[i].pseudo).remove();
+                      }
+
+                      // Trier les répétiteurs
+                      switch (triChoice) {
+                          case "Prix croissant":
+                              dataTri.sort(function (a, b) {
+                                  return parseInt(a.tarif) - parseInt(b.tarif);
+                              });
+                              break;
+                          case "Prix décroissant":
+                              dataTri.sort(function (a, b) {
+                                  return parseInt(a.tarif) + parseInt(b.tarif);
+                              });
+                              break;
+                          case "Note croissante":
+                              dataTri.sort(function (a, b) {
+                                  return parseFloat(a.note) - parseFloat(b.note);
+                              });
+                              break;
+                          case "Note décroissante":
+                              dataTri.sort(function (a, b) {
+                                  return parseFloat(a.note) + parseFloat(b.note);
+                              });
+                              break;
+                          default:
+                              break;
+                      }
+                      // Filtrer les répétiteurs
+                      switch (filterChoice) {
+                          case "En ligne":
+                              dataTri = dataTri.filter(function (el) {
+                                  return (el.isOnline == true);
+                              });
+                              break;
+                          case "Hors-ligne":
+                              dataTri = dataTri.filter(function (el) {
+                                  return (el.isOnline == false);
+                              });
+                              break;
+                          default:
+                              break;
+                      }
+
+
+
+                      // Affichage de la nouvelle liste des répétiteurs
+                      $.each(dataTri, function (index, d) {
+
+                          var elemCoach = $('<div></div>').addClass('listCoach').addClass('table-responsive').attr('id', d['pseudo']);
+                          var elemTabBody = $('<table></table').addClass('table');
+
+                          tarifCoach[d['pseudo']] = d['tarif'];
+
+                          var elemImage = $('<img>').addClass('img-responsive').attr('src', 'http://localhost:4242/getFile/img/' + d['img_profil']).attr('alt', 'Image de profil').attr('height', 128).attr('width', 128);
+                          var elemName = $('<span></span>').text(d['prenom'] + ' ' + d['nom']);
+                          var elemMatiere = $('<span>Matières </span>').append($('<span></span>').addClass('glyphicon glyphicon-tags').attr('aria-hidden', 'true').attr('data-toggle', 'popMatiere').attr('data-trigger', 'hover').attr('title', 'Matières enseignées').attr('data-html', 'true').attr('data-content', transformObjectToArrayHTML(d['matieres'])));
+                          var elemCanton = $('<span></span>').text('Canton: ' + d['canton']);
+                          var elemStatut = $('<span>Statut: <img src="' + ((d['isOnline'] == true) ? green_circle : red_circle) + '" alt="Statut connexion" height="20" width="20"></span>');
+                          var elemTarif = $('<span></span>').text(d['tarif'] + ' CHF/Heure');
+                          var elemRDV = $('<button name="rsv" type="button" class="btn btn-primary" <?php echo ((!isset($_SESSION['_id']) || $_SESSION['type'] == 'Coach') ? 'disabled="disabled"' : ''); ?>>Prendre rendez-vous</button>');
+                          var elemNote = $('<span></span>');
+                          elemNote.append('Note: ' + ((d['note'] == null) ? 'Pas de notes' : '<strong>' + d['note'] + '/10</strong>'));
+                          var elemDispo = $('<span></span>');
+
+
+                          promiseOfDispo = $.post('http://localhost:4242/getPlanning', {
+                              id_coach: d['_id'],
+                              dateLimit: dateLimitRef.toISOString(),
+                              dateNow: date.toISOString()},
+                            function (dataPlanning) {
+                                const tabDefault = [null, null, null, null, null, null, null, null, false, false, false, false, false, false, false, false, false, false, false, false, false];
+                                var isDayFree = false;
+
+                                for (var i = 0; i < 7; i++) {
+                                    var tmpTab = tabDefault;
+                                    for (var j = 0; j < dataPlanning.length; j++) {
+                                        var tmpDate = new Date(dataPlanning[j].date);
+                                        if (dateLoop.getDay() === tmpDate.getDay()) {
+                                            if (dataPlanning[j].isFree) {
+                                                tmpTab[tmpDate.getUTCHours()] = dataPlanning[j].isFree;
+                                                isDayFree = true;
+                                            }
+                                        }
+                                    }
+                                    elemDispo.append($('<span></span>').attr('id', d['pseudo'] + '_' + (dateLoop.getMonth() + 1) + '-' + dateLoop.getDate() + '-' + dateLoop.getFullYear()).attr('data-container', 'body').attr('data-toggle', 'overpop').attr('data-trigger', 'manual').attr('data-placement', 'bottom').attr('data-content', '_').css('color', ((isDayFree) ? 'green' : 'red')).text(week[dateLoop.getDay()].substring(0, 2) + ' '));
+
+                                    dateLoop.setDate(dateLoop.getDate() + 1);
+                                    isDayFree = false;
+                                }
+                                dateLoop = new Date(date);
+                            }
+                          );
+
+                          promiseOfDispo.then(function () {
+                              elemTabBody.append('<tr><td class="col-md-2" rowspan="5">' + elemImage[0].outerHTML + '</td></tr>\n\
+<tr><td class="col-md-2">' + elemName[0].outerHTML + '</td><td class="col-md-2"><input type="text" value="' + d['_id'] + '" hidden/></td><td class="col-md-4"></td><td class="col-md-2"></td></tr>\n\
+<tr><td class="col-md-2">' + elemMatiere[0].outerHTML + '</td><td class="col-md-2">' + elemTarif[0].outerHTML + '</td><td class="col-md-4">Disponibilités:</td><td class="col-md-2" rowspan="2">' + elemRDV[0].outerHTML + '</td></tr>\n\
+<tr><td class="col-md-2">' + elemCanton[0].outerHTML + '</td><td class="col-md-2">' + elemNote[0].outerHTML + '</td><td class="col-md-4">' + elemDispo[0].outerHTML + '</td></tr>\n\
+<tr><td class="col-md-2">' + elemStatut[0].outerHTML + '</td><td class="col-md-2"></td><td class="col-md-4"></td><td class="col-md-2"></td></tr>');
+
+                              elemCoach.append(elemTabBody);
+                              $('#divContainer').append(elemCoach);
+
+                              $('[data-toggle="popMatiere"]').popover();
+                              $('[data-toggle="overpop"]').popover({html: true});
+
+                              $('[data-toggle="overpop"]').each(function () {
+                                  // Compare si le texte n'est pas rouge
+                                  if ($(this).css("color") == 'rgb(255, 0, 0)') {
+                                      $('#' + $(this)[0].id).popover('disable');
+                                  }
+                              });
+                          });
+                      });
                   });
 
 
@@ -275,7 +407,7 @@ $matiere = $_POST['inputSearch'];
                           $('#' + idSpan).popover('show');
                       });
                   });
-                  
+
                   // Ferme la popover quand la souris n'est plus au dessus de l'élément
                   $('#divContainer').on('mouseleave', '[data-toggle="overpop"]', function () {
                       var idSpan = $(this)[0].id;
@@ -305,18 +437,28 @@ $matiere = $_POST['inputSearch'];
                       );
 
                       promiseOfPlanning.then(function () {
-                          console.log(tabEvents);
+                          console.log(tabEvents);                          
                           $('#rsvCalendar').fullCalendar('removeEvents');
                           $('#rsvCalendar').fullCalendar('addEventSource', tabEvents);
                           $('#rsvCalendar').fullCalendar('refetchEvents');
                           $('#fullNameText').text(' - ' + fullName);
-                          $('#myCalendar').modal('show');
+                          $('#myCalendar').modal('show');       
+                          
+                          $('#rsvCalendar').fullCalendar('today');
+                          
+                          
                       });
                   });
 
                   $('#myCalendar').on('hide.bs.modal', function (e) {
                       tabEvents = [];
                       $('#rsvCalendar').fullCalendar('removeEvents');
+                  });
+                  
+                  $('#linkPrevious').click(function(e){
+                      e.preventDefault();
+                      
+                      window.location.replace("index.php");
                   });
               });
         </script>
