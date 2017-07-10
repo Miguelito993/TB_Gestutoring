@@ -8,6 +8,7 @@ session_start();
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Plate-forme d'e-learning</title>
+        <link rel="icon" href="./assets/img/logo_GesTutoring.ico">
         <link rel="stylesheet" href="./bootstrap/css/bootstrap.css">
         <link rel="stylesheet" href="./bootstrap/css/bootstrap-theme.css">
         <link rel="stylesheet" href="./bootstrap/css/theme.css">
@@ -219,9 +220,8 @@ session_start();
                         messages.append('<div><span class="peer">' + partner + '</span>: ' + data + '</div>');
                     });
                 } else if (c.label === 'file') {
-                    c.on('data', function (data) {
-                        console.log(infoExtra.type);
-
+                    c.on('data', function (data) {                        
+                        
                         // If we're getting a file, create a URL for it.
                         if (data.constructor === ArrayBuffer) {
                             var dataView = new Uint8Array(data);
@@ -237,6 +237,10 @@ session_start();
                             }
                             $('#chatbox').find('.messages').append('<div><span class="file">' +
                                 partner + ' vous a envoyé un <a target="_blank" href="' + url + '">fichier</a>.</span></div>');
+                        }else{  
+                            // Fichier reçu de la banque de données
+                            $('#chatbox').find('.messages').append('<div><span class="file">' +
+                                partner + ' vous a envoyé un <a target="_blank" href="' + data + '">fichier</a>.</span></div>');
                         }
                         infoExtra = null;
                     });
@@ -296,6 +300,7 @@ session_start();
                 $('#step3, #video-container-1, #video-container-2, #chatbox, #searchData, #titleSession, #send').show();
                 $('#titleSession').text("Session de chat avec " + partner);
                 $('#infoUtil').append('<h4>' + matiere + '</h4>');
+                // TODO: Ajouter un chronomètre 
 
             }
 

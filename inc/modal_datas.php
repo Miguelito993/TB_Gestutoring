@@ -12,7 +12,7 @@
                             <tr>
                                 <th>#</th>
                                 <th>Type</th>
-                                <th>Lien</th>
+                                <th>Mot-clés</th>
                                 <th></th>
                             </tr>
                         </table>
@@ -23,7 +23,7 @@
                             <tr>
                                 <th>#</th>
                                 <th>Type</th>
-                                <th>Lien</th>
+                                <th>Mot-clés</th>
                                 <th></th>
                             </tr>
                         </table>                        

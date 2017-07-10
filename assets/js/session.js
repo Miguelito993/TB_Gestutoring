@@ -9,24 +9,37 @@ jQuery(document).ready(function ($) {
             function (idCoach) {
                 $.getJSON(
                     'http://localhost:4242/getDataList/' + matiere + '/'+idCoach[0]._id,
-                    function (data) {
-                        //TODO: Envoyer directement le pdf avec une prévisualisation dans la liste du contenu disponible
-                        
+                    function (data) {                           
                         var indexPublic = 1;
                         var indexPrivate = 1;
                         $.each(data, function (index, d) {
                             if(d['access'] == 'public'){
                                 $('#dataPublic').removeAttr('hidden');
-                                $('#tablePublic').append('<tr><td>'+indexPublic++ +'</td><td>'+d['typeData']+'</td><td>'+d['data']+'</td><td>Un lien</td></tr>');
+                                $('#tablePublic').append('<tr><td>'+indexPublic++ +'</td><td>'+d['typeData']+'</td><td>'+d['keywords']+'</td><td><input id="'+d['data']+'" type="button" class="btn btn-success" name="dataBtn" value="Envoyer"></td></tr>');
                             }else{
                                 $('#dataPrivate').removeAttr('hidden');
-                                $('#tablePrivate').append('<tr><td>'+indexPrivate++ +'</td><td>'+d['typeData']+'</td><td>'+d['data']+'</td><td>Un lien</td></tr>');
+                                $('#tablePrivate').append('<tr><td>'+indexPrivate++ +'</td><td>'+d['typeData']+'</td><td>'+d['keywords']+'</td><td><input id="'+d['data']+'" type="button" class="btn btn-success" name="dataBtn" value="Envoyer"></td></tr>');
                             }
                         });                        
                     }
                 );
             }
         );
+    });
+    
+    // Envoi le fichier de la banque de données au partenaire
+    $('.modal-body').on('click', '[name="dataBtn"]', function(){                
+        var infoFile = {type: 'application/pdf', name: $(this)[0].id, lastModified: moment()};        
+        
+        var theirId = $('#their-id').text();
+        var conns = peer.connections[theirId];
+                
+        if (conns[2].label === 'file') {
+            conns[3].send(infoFile);
+            conns[2].send('http://localhost:4242/getFile/datas/' + $(this)[0].id);
+            $('#chatbox').find('.messages').append('<div><span class="file">Vous avez envoyé un fichier</span></div>');            
+        }
+        $('#myDatas').modal('hide');
     });
     
     $('#notationForm').submit(function (e) {
@@ -71,7 +84,7 @@ jQuery(document).ready(function ($) {
     });
 
     $('#myDatas').on('hide.bs.modal', function (e) {
-        $('#tablePrivate, #tablePublic').html('<tr><th>#</th><th>Type</th><th>Aperçu</th><th>Envoyer</th></tr>').attr('hidden');
+        $('#tablePrivate, #tablePublic').html('<tr><th>#</th><th>Type</th><th>Mot-clés</th><th></th></tr>').attr('hidden');
         //$('#tablePrivate').html('<tr><th>#</th><th>Type</th><th>Lien</th><th></th></tr>').attr('hidden');
     });
     

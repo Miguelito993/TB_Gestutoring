@@ -621,8 +621,6 @@
   });
 
   app.get('/getDataList/:matiere/:idCoach', function (req, res) {
-      //res.setHeader('Content-Type', 'text/plain');
-
       var param = req.params.matiere;
       var info = {idCoach: req.params.idCoach};
       var dataList = [];
@@ -642,17 +640,7 @@
                           }
                       }
                   }
-                  //console.log(util.inspect(dataList, {showHidden: true, depth: null, colors: true}));
-                  /*
-                   var file = fs.createReadStream(__dirname+'/datas/'+dataList[0]['data']);
-                   var writableStream = fs.createWriteStream('file2.txt');
-                   var stat = fs.statSync(__dirname+'/datas/'+dataList[0]['data']);
-                   res.setHeader('Content-Length', stat.size);
-                   res.setHeader('Content-Type', 'application/pdf');
-                   res.setHeader('Content-Disposition', 'attachment; filename=exemple.pdf');
-                   file.pipe(writableStream);
-                   */
-                  //res.sendFile(__dirname+'/datas/'+dataList[0]['data']);
+                  
                   res.jsonp(dataList);
                   db.close();
               });
