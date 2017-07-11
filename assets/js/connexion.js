@@ -7,8 +7,7 @@ jQuery(document).ready(function ($) {
                 'http://localhost:4242/checkLogin',
                 {
                     pseudo: $('#inputLogPseudo').val(),
-                    pwd: $('#inputLogPassword').val()
-                    //TODO: Chiffrer le mot de passe avec sha1 (exemple dans le fichier inscription.js)
+                    pwd: sha1($('#inputLogPassword').val())                    
                 }
         ,
                 function (data) {
@@ -35,6 +34,12 @@ jQuery(document).ready(function ($) {
                         $("#alertPopUp").attr('class', 'alert alert-danger alert-dismissible');
                         $("#alertPopUp").empty();
                         $("#alertPopUp").append("Combinaison Pseudo/Mot de passe erroné");
+
+                        $("#inputLogPassword").val("");
+                    } else if (data.status == 'NotValid') {
+                        $("#alertPopUp").attr('class', 'alert alert-danger alert-dismissible');
+                        $("#alertPopUp").empty();
+                        $("#alertPopUp").append("Votre compte n'a pas encore été validé");
 
                         $("#inputLogPassword").val("");
                     }
