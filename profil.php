@@ -144,6 +144,7 @@ if (!isset($_SESSION['pseudo'])) {
         include './inc/modal_event.php';
         include './inc/modal_listUser.php';
         include './inc/modal_validUser.php';
+        include './inc/modal_addDatas.php';
         ?>
         <!-- /Modal -->
 
@@ -156,6 +157,7 @@ if (!isset($_SESSION['pseudo'])) {
         <script src="./bootstrap/js/bootstrap.js"></script>
         <script src="./assets/js/calendar.js"></script>
         <script src="./assets/js/sha1.js"></script>
+        <script src="./assets/js/addDatas.js"></script>
 
         <script type="text/javascript">
 
@@ -436,7 +438,7 @@ if (!isset($_SESSION['pseudo'])) {
                       e.preventDefault();
 
                       $.getJSON(
-                        'http://localhost:4242/getUserInactif',
+                        'http://localhost:4242/getUserInvalid',
                         function (data) {
                             $.each(data, function (index, d) {
                                 $('#listUser').append('<li><button type="button" id="' + d['_id'] + '" class="btn btn-default" name="validUser">' + d['pseudo'] + '</button></li>');

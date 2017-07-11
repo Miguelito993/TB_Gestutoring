@@ -47,6 +47,7 @@ session_start();
         include './inc/modal_inscrip.php';
         include './inc/modal_listUser.php';
         include './inc/modal_validUser.php';
+        include './inc/modal_addDatas.php';
         ?>
         <!-- /Modal -->
 
@@ -58,6 +59,7 @@ session_start();
         <script src="./assets/js/inscription.js"></script>
         <script src="./assets/js/sha1.js"></script>
         <script src="./assets/js/session.js"></script>
+        <script src="./assets/js/addDatas.js"></script>
         <script type="text/javascript">
               var subject = [];
 
@@ -126,7 +128,7 @@ session_start();
                       e.preventDefault();
 
                       $.getJSON(
-                        'http://localhost:4242/getUserInactif',
+                        'http://localhost:4242/getUserInvalid',
                         function (data) {
                             $.each(data, function (index, d) {
                                 $('#listUser').append('<li><button type="button" id="' + d['_id'] + '" class="btn btn-default" name="validUser">' + d['pseudo'] + '</button></li>');

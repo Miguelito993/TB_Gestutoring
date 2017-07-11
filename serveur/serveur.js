@@ -20,15 +20,12 @@
     cors = require('cors'), // Autorise les requêtes cross-domain
     assert = require('assert'),
     util = require('util'), // Afficher le contenu des objets
-    bodyParser = require('body-parser'),
-    path = require('path'),
-    fs = require('fs'),
-    ExpressPeerServer = require('peer').ExpressPeerServer; // Permet de récupérer les paramètres d'une requête POST
+    bodyParser = require('body-parser'), // Permet de récupérer les paramètres d'une requête POST
+    ExpressPeerServer = require('peer').ExpressPeerServer; 
 
 
   var storage = multer.diskStorage({
       destination: function (req, file, callback) {
-          //TODO: pour les images vérifier le champ file.mimetype et appeller la callback correspondante au dossier
           if (file.mimetype == 'application/pdf') {
               callback(null, './uploads');
           } else if (file.mimetype.split('/')[0] == 'image') {
@@ -77,12 +74,30 @@
           }
       }
   });
+  
+  var storageDatas = multer.diskStorage({
+      destination: function (req, file, callback) {          
+        callback(null, './datas');          
+      },
+      filename: function (req, file, callback) {          
+          var datas = parseDatasInfo(req.body);          
+                     
+              MongoClient.connect(urlDB, function (err, db) {
+                  assert.equal(err, null);
+                  insertDatas(db, datas);                      
+                  db.close();                  
+              });
+              callback(null, datas.fichier);          
+      }
+  });
+  
+  
+  
 
   var upload = multer({storage: storage}).any();
+  var uploadDatas = multer({storage: storageDatas}).any();
 
-  function parseUserInfo(body, myFile) {
-      //console.log(util.inspect(body, {showHidden: true, depth: null, colors: true}));
-      //console.log(util.inspect(myFile, {showHidden: true, depth: null, colors: true}));
+  function parseUserInfo(body, myFile) {      
       var fileStatus = (myFile != null);
       var user = {
           id: body.id,
@@ -103,6 +118,18 @@
           matieres: (body.inputType === "Coach") ? body.inputMatiere : null
       }
       return user;
+  }
+  
+  function parseDatasInfo(body) {      
+      var datas = {
+          typeData: body.ad_inputType,
+          fichier: body.ad_inputType+'_'+Date.now()+'.pdf',
+          keywords: body.ad_inputKeyword.split(';'),
+          access: body.ad_Access,
+          idMatiere: body.ad_inputMatiere,
+          idUser: body.ad_inputUser
+      }
+      return datas;
   }
 
   function doAverageNotation(tabNota) {
@@ -447,7 +474,7 @@
       }
   }
   
-  var getUserInactif = function (db, callback) {
+  var getUserInvalid = function (db, callback) {
       var collection = db.collection('t_users');
       
         collection.find({isValid: false}).toArray(
@@ -467,6 +494,21 @@
             callback(docs);
         }
       );
+  }
+  
+  var insertDatas = function (db, datas) {
+      var collection = db.collection('t_datas');
+
+      collection.insertOne({
+          typeData: datas.typeData,
+          data: datas.fichier,
+          keywords: datas.keywords,
+          access: datas.access,
+          id_user: ObjectId(datas.idUser),
+          id_matiere: ObjectId(datas.idMatiere)          
+      }, function (err) {
+          assert.equal(err, null);
+      });
   }
 
   var insertUser = function (db, user) {
@@ -589,6 +631,15 @@
               return res.send(err);
           }
           res.send("Inscription is done");
+      });
+  });
+  
+  app.post('/submitDatas', function (req, res) {      
+      uploadDatas(req, res, function (err) {         
+          if (err) {
+              return res.send(err);
+          }
+          res.send("Additionnal data is inserted");
       });
   });
 
@@ -823,9 +874,9 @@
       }
   });
 
-  app.get('/getFile/:type/:name', function (req, res) {
+  app.get('/getFile/:folder/:name', function (req, res) {
       var fileName = req.params.name;
-      var typeFile = req.params.type;
+      var typeFile = req.params.folder;
 
       var options = {
           root: __dirname + '/' + typeFile + '/',
@@ -912,11 +963,11 @@
       }
   });
   
-  app.get('/getUserInactif', function (req, res) { 
+  app.get('/getUserInvalid', function (req, res) { 
       MongoClient.connect(urlDB, function (err, db) {
           assert.equal(err, null);
 
-          getUserInactif(db, function (docs) {
+          getUserInvalid(db, function (docs) {
               res.jsonp(docs);
               db.close();
           });

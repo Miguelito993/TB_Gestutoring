@@ -49,6 +49,7 @@ $matiere = $_POST['inputSearch'];
         <?php
         include './inc/modal_inscrip.php';
         include './inc/modal_calendar.php';
+        include './inc/modal_addDatas.php';
         ?>
         <!-- /Modal -->
 
@@ -63,6 +64,7 @@ $matiere = $_POST['inputSearch'];
         <script src="./assets/js/inscription.js"></script>
         <script src="./assets/js/calendar.js"></script>
         <script src="./assets/js/sha1.js"></script>
+        <script src="./assets/js/addDatas.js"></script>
 
         <script type="text/javascript">
               var green_circle = "./assets/img/green_circle.svg";
