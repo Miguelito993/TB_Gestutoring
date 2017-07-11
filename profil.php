@@ -12,6 +12,7 @@ if (!isset($_SESSION['pseudo'])) {
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Plate-forme d'e-learning</title>
+        <link rel="icon" href="./assets/img/logo_GesTutoring.ico">
         <link rel="stylesheet" href="./bootstrap/css/bootstrap.css">
         <link rel="stylesheet" href="./bootstrap/css/bootstrap-theme.css">
         <link rel="stylesheet" href="./bootstrap/css/theme.css">
@@ -55,24 +56,24 @@ if (!isset($_SESSION['pseudo'])) {
                     <tr>
                         <td>Mot de passe</td>
                         <td><input type="password" class="form-control" id="p_inputPassword" name="p_inputPassword" value="<?php echo $_SESSION['password']; ?>"></td>
-                        <td>Cell 13</td>
+                        <td></td>
                     </tr>
                     <tr>
                         <td>Canton</td>
                         <td><select class="form-control" id="p_inputCity" name="p_inputCity">
                                 <!-- Formulaire rempli à l'aide de jQuery -->
                             </select></td>
-                        <td>Cell 16</td>
+                        <td></td>
                     </tr>
                     <tr>
                         <td>Soldes</td>
                         <td><span id="p_inputSoldes" name="p_inputSoldes"><?php echo number_format($_SESSION['soldes'], 2); ?> CHF</span></td>
-                        <td>Cell 19</td>
+                        <td></td>
                     </tr>
                     <tr>
                         <td>Type de compte</td>
                         <td><span id="p_inputType" name="p_inputType"><?php echo ($_SESSION['type'] == 'Coach') ? 'Répétiteur' : 'Étudiant'; ?></span></td>
-                        <td>Cell 21</td>
+                        <td></td>
                     </tr>
                     <?php
                     if ($_SESSION['type'] == 'Coach') {
@@ -84,37 +85,37 @@ if (!isset($_SESSION['pseudo'])) {
                         echo "<tr>
                                 <td>Tarif</td>
                                 <td><input type=\"number\" class=\"form-control\" id=\"p_inputTarif\" name=\"p_inputTarif\" step=\"1\" min=\"1\" max=\"50\" value=\"$_SESSION[tarif]\"></td>
-                                <td>Cell 24</td>
+                                <td></td>
                               </tr>
                               <tr>
                                 <td>Diplômes</td>
                                 <td id=\"p_cellDiplomes\">$diplomes</td>
-                                <td>Cell 27</td>
+                                <td></td>
                               </tr>
                               <tr>
                                 <td>Matières</td>
                                 <td><select multiple class=\"form-control\" id=\"p_inputMatiere\" name=\"inputMatiere\">
                                     
                                 </select></td>
-                                <td>Cell 30</td>
+                                <td></td>
                               </tr>";
                     } else if ($_SESSION['type'] == 'Student') {
                         echo "<tr>
                                 <td>Email d'un parent</td>
                                 <td><input type=\"email\" class=\"form-control\" id=\"p_inputEmailParent\" name=\"p_inputEmailParent\" value=\"$_SESSION[emailParent]\"></td>
-                                <td>Cell 24</td>
+                                <td></td>
                               </tr>";
                     }
                     ?>
                     <tr>
-                        <td>Cell 25</td>
-                        <td>Cell 26</td>
+                        <td></td>
+                        <td></td>
                         <td><button type="button" id="btnSave" class="btn btn-primary btn-block" disabled="disabled">Sauvegarder</button></td>
                     </tr>
                 </table>
             </div>
 
-            <table class="table">
+            <table id="tabCalendar" class="table" hidden>
                 <tr>
                     <td>
                         <h2>Planning</h2>
@@ -126,14 +127,14 @@ if (!isset($_SESSION['pseudo'])) {
                     </td>
                 </tr>
             </table>
-            
+
             <table id="lastActivities" class="table">
                 <tr>
                     <td>
                         <h2>Dernières activités</h2>
                     </td>
                 </tr>
-                
+
             </table>
 
         </div> <!-- /container -->   
@@ -141,6 +142,8 @@ if (!isset($_SESSION['pseudo'])) {
         <!-- Modal -->
         <?php
         include './inc/modal_event.php';
+        include './inc/modal_listUser.php';
+        include './inc/modal_validUser.php';
         ?>
         <!-- /Modal -->
 
@@ -202,6 +205,10 @@ if (!isset($_SESSION['pseudo'])) {
               );
 
               jQuery(document).ready(function ($) {
+                  if ('<?php echo $_SESSION['type']; ?>' == 'Coach') {
+                      $('#tabCalendar').removeAttr('hidden');
+                  }
+
                   if ('<?php echo $_SESSION['img_profil']; ?>' != '') {
                       $('#imgProfil').attr('src', 'http://localhost:4242/getFile/img/<?php echo $_SESSION['img_profil']; ?>');
                   }
@@ -305,33 +312,36 @@ if (!isset($_SESSION['pseudo'])) {
                         });
                     }
                   );
-                
+
                   $.post('http://localhost:4242/getEndedMeeting', {
-                        type: '<?php echo $_SESSION['type']; ?>',
-                        myID: '<?php echo $_SESSION['_id']; ?>'
-                    },
-                        function (data) {
-                            console.log(data);                            
-                            
+                      type: '<?php echo $_SESSION['type']; ?>',
+                      myID: '<?php echo $_SESSION['_id']; ?>'
+                  },
+                    function (data) {
+                        console.log(data);
+                        if (data.length > 0) {
                             $.each(data, function (index, d) {
                                 var myDate = moment(d['date']);
-                                $.getJSON('http://localhost:4242/getNamesById/' + d['id_coach'], function(data1){
-                                    var coach = data1[0]['prenom'] + ' ' +data1[0]['nom'];                                    
-                                    $.getJSON('http://localhost:4242/getNamesById/' + d['id_student'], function(data2){
-                                         var student = data2[0]['prenom'] + ' ' +data2[0]['nom'];
-                                         $.getJSON('http://localhost:4242/getMatiereByID/' + d['id_matiere'], function(data3){
-                                             var matiere = data3[0]['name'];
-                                             
-                                             var userDisplay = ('<?php echo $_SESSION['type']; ?>' == 'Coach')?student:coach;
-                                             $('#lastActivities').append('<tr><td>'+myDate.format("DD.MM.YYYY à HH:mm")+' : '+matiere+' avec '+userDisplay+'</td></tr>');
-                                             
-                                         });
+                                $.getJSON('http://localhost:4242/getNamesById/' + d['id_coach'], function (data1) {
+                                    var coach = data1[0]['prenom'] + ' ' + data1[0]['nom'];
+                                    $.getJSON('http://localhost:4242/getNamesById/' + d['id_student'], function (data2) {
+                                        var student = data2[0]['prenom'] + ' ' + data2[0]['nom'];
+                                        $.getJSON('http://localhost:4242/getMatiereByID/' + d['id_matiere'], function (data3) {
+                                            var matiere = data3[0]['name'];
+
+                                            var userDisplay = ('<?php echo $_SESSION['type']; ?>' == 'Coach') ? student : coach;
+                                            $('#lastActivities').append('<tr><td>' + myDate.format("DD.MM.YYYY à HH:mm") + ' : ' + matiere + ' avec ' + userDisplay + '</td></tr>');
+
+                                        });
                                     });
-                                    
+
                                 });
-                            });                            
+                            });
+                        } else {
+                            $('#lastActivities').append('<tr><td>Aucune activité</td></tr>');
                         }
-                    );
+                    }
+                  );
 
 
                   $('#calendar').fullCalendar({
@@ -419,6 +429,71 @@ if (!isset($_SESSION['pseudo'])) {
                       $('#calendar').fullCalendar('refetchEvents');
                   });
 
+
+                  // ===========================================================
+                  // Méthode jQuery pour la validation d'un utilisateur
+                  $('#linkValidation').click(function (e) {
+                      e.preventDefault();
+
+                      $.getJSON(
+                        'http://localhost:4242/getUserInactif',
+                        function (data) {
+                            $.each(data, function (index, d) {
+                                $('#listUser').append('<li><button type="button" id="' + d['_id'] + '" class="btn btn-default" name="validUser">' + d['pseudo'] + '</button></li>');
+                            });
+                            $('#myListUser').modal('show');
+                        }
+                      );
+                  });
+
+                  $('#myListUser').on('hide.bs.modal', function () {
+                      $('#listUser').empty();
+                  });
+                  $('#listUser').on('click', '[name="validUser"]', function () {
+                      $.getJSON(
+                        'http://localhost:4242/getUserById/' + $(this)[0].id,
+                        function (data) {
+                            var diplomes = '';
+                            $('#vu_imgProfil').attr('src', 'http://localhost:4242/getFile/img/' + data[0].img_profil);
+                            $('#vu_inputFirstname').text(data[0].prenom);
+                            $('#vu_inputName').text(data[0].nom);
+                            $('#vu_inputEmail').text(data[0].email);
+                            $('#vu_inputPseudo').text(data[0].pseudo);
+                            $('#vu_inputCity').text(data[0].canton);
+                            $('#vu_inputTarif').text(data[0].tarif);
+                            $('#vu_inputMatiere').text(data[0].matieres);
+                            for (var i = 0; i < data[0].diplomes.length; i++) {
+                                diplomes += '<a href="http://localhost:4242/getFile/uploads/' + data[0].diplomes[i] + '" target="_blank">' + data[0].diplomes[i] + '</a><br/>';
+                            }
+                            $('#vu_cellDiplomes').append($(diplomes));
+                            $('#submitValidUser').attr('name', data[0]._id);
+
+                            $('#myValidUser').modal('show');
+                        }
+                      );
+                  });
+                  $('#myValidUser').on('hide.bs.modal', function () {
+                      $('#vu_cellDiplomes').empty();
+                  });
+                  $('#submitValidUser').click(function (e) {
+                      e.preventDefault();
+
+                      $.post('http://localhost:4242/validUser', {
+                          id: $('#submitValidUser')[0].name
+                      },
+                        function (data) {
+                            console.log(data);
+                            $('#myValidUser').modal('hide');
+                            $('#myListUser').modal('hide');
+
+                            $("#alertPopUpProfil").attr('class', 'alert alert-success alert-dismissible');
+                            $("#alertPopUpProfil").empty();
+                            $("#alertPopUpProfil").append("Validation effectué avec succès");
+                        }
+                      );
+
+                  });
+                  // ===========================================================
               });
         </script>
     </body>

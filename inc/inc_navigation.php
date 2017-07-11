@@ -13,7 +13,11 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <?php
             if (isset($_SESSION['pseudo'])) {
-                include './inc/inc_menu.php';
+                if(($_SESSION['type'] == 'Coach') || ($_SESSION['type'] == 'Student')){
+                    include './inc/inc_menu.php';
+                }else{
+                    include './inc/inc_menu_validation.php';
+                }
             }
             ?>
             <ul class="nav navbar-nav navbar-right">

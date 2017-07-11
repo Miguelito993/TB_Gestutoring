@@ -81,8 +81,8 @@
   var upload = multer({storage: storage}).any();
 
   function parseUserInfo(body, myFile) {
-      console.log(util.inspect(body, {showHidden: true, depth: null, colors: true}));
-      console.log(util.inspect(myFile, {showHidden: true, depth: null, colors: true}));
+      //console.log(util.inspect(body, {showHidden: true, depth: null, colors: true}));
+      //console.log(util.inspect(myFile, {showHidden: true, depth: null, colors: true}));
       var fileStatus = (myFile != null);
       var user = {
           id: body.id,
@@ -269,6 +269,19 @@
       }
   }
   
+  var getUserById = function (db, info, callback) {
+      var collection = db.collection('t_users');
+
+      if (info != null) {
+          collection.find({_id: ObjectId(info)}).toArray(
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            }
+          );
+      }
+  }
+  
   var getNamesById = function (db, info, callback) {
       var collection = db.collection('t_users');
 
@@ -433,6 +446,28 @@
           );
       }
   }
+  
+  var getUserInactif = function (db, callback) {
+      var collection = db.collection('t_users');
+      
+        collection.find({isValid: false}).toArray(
+          function (err, docs) {
+              assert.equal(err, null);
+              callback(docs);
+          });
+      
+  }
+  
+  var validUser = function (db, info, callback) {
+      var collection = db.collection('t_users');
+
+      collection.update({_id: ObjectId(info.id)}, {$set: {isValid: ('true' == 'true')}},
+        function (err, docs) {
+            assert.equal(err, null);
+            callback(docs);
+        }
+      );
+  }
 
   var insertUser = function (db, user) {
       var collection = db.collection('t_users');
@@ -517,9 +552,13 @@
       MongoClient.connect(urlDB, function (err, db) {
           assert.equal(err, null);
 
-          checkLogin(db, user, function (docs) {
+          checkLogin(db, user, function (docs) {              
               if (docs[0] != null) {
-                  res.jsonp({status: 'Success', docs});
+                    if(docs[0].isValid == true){
+                        res.jsonp({status: 'Success', docs});
+                    }else{
+                        res.jsonp({status: 'NotValid'});
+                    }
               } else {
                   res.jsonp({status: 'Failed'});
               }
@@ -678,6 +717,23 @@
       }
   });
   
+  app.get('/getUserById/:idUser', function (req, res) {
+      var info = req.params.idUser;
+
+      if (info !== 'null') {
+          MongoClient.connect(urlDB, function (err, db) {
+              assert.equal(err, null);
+
+              getUserById(db, info, function (docs) {
+                  res.jsonp(docs);
+                  db.close();
+              });
+          });
+      } else {
+          res.send(null);
+      }
+  });
+  
   app.get('/getNamesById/:idUser', function (req, res) {
       var info = req.params.idUser;
 
@@ -806,7 +862,7 @@
           "matiere": req.body.matiere,
           "emailParent": req.body.emailParent};
 
-      console.log(util.inspect(info, {showHidden: true, depth: null, colors: true}));
+      //console.log(util.inspect(info, {showHidden: true, depth: null, colors: true}));
 
       if ((info.id != null) &&
         (info.firstname != null) &&
@@ -856,7 +912,31 @@
       }
   });
   
+  app.get('/getUserInactif', function (req, res) { 
+      MongoClient.connect(urlDB, function (err, db) {
+          assert.equal(err, null);
+
+          getUserInactif(db, function (docs) {
+              res.jsonp(docs);
+              db.close();
+          });
+      });
+  });
   
+  app.post('/validUser', function (req, res) {
+      var info = {"id": req.body.id};
+
+      if (info.id != null) {
+          MongoClient.connect(urlDB, function (err, db) {
+              assert.equal(err, null);
+
+              validUser(db, info, function (docs) {
+                  res.jsonp(docs);
+                  db.close();
+              });
+          });
+      }
+  });
 
   app.use('/peerjs', ExpressPeerServer(server, {debug: true}));
 
