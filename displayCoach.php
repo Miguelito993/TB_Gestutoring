@@ -115,13 +115,13 @@ $matiere = $_POST['inputSearch'];
                         tarifCoach[d['pseudo']] = d['tarif'];
 
                         var elemImage = $('<img>').addClass('img-responsive').attr('src', 'http://localhost:4242/getFile/img/' + d['img_profil']).attr('alt', 'Image de profil').attr('height', 128).attr('width', 128);
-                        var elemName = $('<span></span>').text(d['prenom'] + ' ' + d['nom']);
+                        var elemName = $('<h4></h4>').text(d['prenom'] + ' ' + d['nom']);
                         var elemMatiere = $('<span>Matières </span>').append($('<span></span>').addClass('glyphicon glyphicon-tags').attr('aria-hidden', 'true').attr('data-toggle', 'popMatiere').attr('data-trigger', 'hover').attr('title', 'Matières enseignées').attr('data-html', 'true').attr('data-content', transformObjectToArrayHTML(d['matieres'])));
                         var elemCanton = $('<span></span>').text('Canton: ' + d['canton']);
                         var elemStatut = $('<span>Statut: <img src="' + ((d['isOnline'] == true) ? green_circle : red_circle) + '" alt="Statut connexion" height="20" width="20"></span>');
-                        var elemTarif = $('<span></span>').text(d['tarif'] + ' CHF/Heure');
+                        var elemTarif = $('<h3></h3>').addClass('text-center').text(d['tarif'] + ' CHF/Heure');
                         var elemRDV = $('<button name="rsv" type="button" class="btn btn-primary" <?php echo ((!isset($_SESSION['_id']) || $_SESSION['type'] != 'Student') ? 'disabled="disabled"' : ''); ?>>Prendre rendez-vous</button>');
-                        var elemNote = $('<span></span>');
+                        var elemNote = $('<h3></h3>').addClass('text-center');;
                         var elemDispo = $('<span></span>');
 
 
@@ -166,10 +166,10 @@ $matiere = $_POST['inputSearch'];
                         })
                           .then(function () {
                               elemTabBody.append('<tr><td class="col-md-2" rowspan="5">' + elemImage[0].outerHTML + '</td></tr>\n\
-<tr><td class="col-md-2">' + elemName[0].outerHTML + '</td><td class="col-md-2"><input type="text" value="' + d['_id'] + '" hidden/></td><td class="col-md-4"></td><td class="col-md-2"></td></tr>\n\
-<tr><td class="col-md-2">' + elemMatiere[0].outerHTML + '</td><td class="col-md-2">' + elemTarif[0].outerHTML + '</td><td class="col-md-4">Disponibilités:</td><td class="col-md-2" rowspan="2">' + elemRDV[0].outerHTML + '</td></tr>\n\
-<tr><td class="col-md-2">' + elemCanton[0].outerHTML + '</td><td class="col-md-2">' + elemNote[0].outerHTML + '</td><td class="col-md-4">' + elemDispo[0].outerHTML + '</td></tr>\n\
-<tr><td class="col-md-2">' + elemStatut[0].outerHTML + '</td><td class="col-md-2"></td><td class="col-md-4"></td><td class="col-md-2"></td></tr>');
+<tr><td class="col-md-2">' + elemName[0].outerHTML + '</td><td class="col-md-4"><input type="text" value="' + d['_id'] + '" hidden/></td><td class="col-md-2"></td><td class="col-md-2"></td></tr>\n\
+<tr><td class="col-md-2">' + elemMatiere[0].outerHTML + '</td><td class="col-md-4">' + elemTarif[0].outerHTML + '</td><td class="col-md-2">Disponibilités:</td><td class="col-md-2" rowspan="2">' + elemRDV[0].outerHTML + '</td></tr>\n\
+<tr><td class="col-md-2">' + elemCanton[0].outerHTML + '</td><td class="col-md-4">' + elemNote[0].outerHTML + '</td><td class="col-md-2">' + elemDispo[0].outerHTML + '</td></tr>\n\
+<tr><td class="col-md-2">' + elemStatut[0].outerHTML + '</td><td class="col-md-4"></td><td class="col-md-2"></td><td class="col-md-2"></td></tr>');
 
                               elemCoach.append(elemTabBody);
                               $('#divContainer').append(elemCoach);
@@ -307,13 +307,13 @@ $matiere = $_POST['inputSearch'];
                           tarifCoach[d['pseudo']] = d['tarif'];
 
                           var elemImage = $('<img>').addClass('img-responsive').attr('src', 'http://localhost:4242/getFile/img/' + d['img_profil']).attr('alt', 'Image de profil').attr('height', 128).attr('width', 128);
-                          var elemName = $('<span></span>').text(d['prenom'] + ' ' + d['nom']);
+                          var elemName = $('<h4></h4>').text(d['prenom'] + ' ' + d['nom']);
                           var elemMatiere = $('<span>Matières </span>').append($('<span></span>').addClass('glyphicon glyphicon-tags').attr('aria-hidden', 'true').attr('data-toggle', 'popMatiere').attr('data-trigger', 'hover').attr('title', 'Matières enseignées').attr('data-html', 'true').attr('data-content', transformObjectToArrayHTML(d['matieres'])));
                           var elemCanton = $('<span></span>').text('Canton: ' + d['canton']);
                           var elemStatut = $('<span>Statut: <img src="' + ((d['isOnline'] == true) ? green_circle : red_circle) + '" alt="Statut connexion" height="20" width="20"></span>');
-                          var elemTarif = $('<span></span>').text(d['tarif'] + ' CHF/Heure');
+                          var elemTarif = $('<h3></h3>').addClass('text-center').text(d['tarif'] + ' CHF/Heure');
                           var elemRDV = $('<button name="rsv" type="button" class="btn btn-primary" <?php echo ((!isset($_SESSION['_id']) || $_SESSION['type'] != 'Student') ? 'disabled="disabled"' : ''); ?>>Prendre rendez-vous</button>');
-                          var elemNote = $('<span></span>');
+                          var elemNote = $('<h3></h3>').addClass('text-center');
                           elemNote.append('Note: ' + ((d['note'] == null) ? 'Pas de notes' : '<strong>' + d['note'] + '/10</strong>'));
                           var elemDispo = $('<span></span>');
 
@@ -348,10 +348,10 @@ $matiere = $_POST['inputSearch'];
 
                           promiseOfDispo.then(function () {
                               elemTabBody.append('<tr><td class="col-md-2" rowspan="5">' + elemImage[0].outerHTML + '</td></tr>\n\
-<tr><td class="col-md-2">' + elemName[0].outerHTML + '</td><td class="col-md-2"><input type="text" value="' + d['_id'] + '" hidden/></td><td class="col-md-4"></td><td class="col-md-2"></td></tr>\n\
-<tr><td class="col-md-2">' + elemMatiere[0].outerHTML + '</td><td class="col-md-2">' + elemTarif[0].outerHTML + '</td><td class="col-md-4">Disponibilités:</td><td class="col-md-2" rowspan="2">' + elemRDV[0].outerHTML + '</td></tr>\n\
-<tr><td class="col-md-2">' + elemCanton[0].outerHTML + '</td><td class="col-md-2">' + elemNote[0].outerHTML + '</td><td class="col-md-4">' + elemDispo[0].outerHTML + '</td></tr>\n\
-<tr><td class="col-md-2">' + elemStatut[0].outerHTML + '</td><td class="col-md-2"></td><td class="col-md-4"></td><td class="col-md-2"></td></tr>');
+<tr><td class="col-md-2">' + elemName[0].outerHTML + '</td><td class="col-md-4"><input type="text" value="' + d['_id'] + '" hidden/></td><td class="col-md-2"></td><td class="col-md-2"></td></tr>\n\
+<tr><td class="col-md-2">' + elemMatiere[0].outerHTML + '</td><td class="col-md-4">' + elemTarif[0].outerHTML + '</td><td class="col-md-2">Disponibilités:</td><td class="col-md-2" rowspan="2">' + elemRDV[0].outerHTML + '</td></tr>\n\
+<tr><td class="col-md-2">' + elemCanton[0].outerHTML + '</td><td class="col-md-4">' + elemNote[0].outerHTML + '</td><td class="col-md-2">' + elemDispo[0].outerHTML + '</td></tr>\n\
+<tr><td class="col-md-2">' + elemStatut[0].outerHTML + '</td><td class="col-md-4"></td><td class="col-md-2"></td><td class="col-md-2"></td></tr>');
 
                               elemCoach.append(elemTabBody);
                               $('#divContainer').append(elemCoach);
