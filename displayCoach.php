@@ -13,6 +13,7 @@ $matiere = $_POST['inputSearch'];
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>Plate-forme d'e-learning</title>
+        <link rel="icon" href="./assets/img/logo_GesTutoring.ico">
         <link rel="stylesheet" href="./bootstrap/css/bootstrap.css">
         <link rel="stylesheet" href="./bootstrap/css/bootstrap-theme.css">
         <link rel="stylesheet" href="./bootstrap/css/theme.css">
@@ -37,7 +38,7 @@ $matiere = $_POST['inputSearch'];
                     <td class="col-xs-2"><a id="linkPrevious"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span> Revenir à l'accueil</a></td>
                     <td class="col-xs-6"><h2 class="text-center">Résultats pour: <?php echo $matiere; ?></h2></td>
                     <td class="col-xs-2"><select id="filterStatut" name="optionFilter" class="form-control"><option disabled selected>Statut</option><option value="1">Tous</option><option value="2">En ligne</option><option value="3">Hors-ligne</option></select></td>
-                    <td class="col-xs-2"><select id="triCoaches" name="optionFilter" class="form-control"><option disabled selected>Filtre</option><option value="1">Prix croissant</option><option value="2">Prix décroissant</option><option value="3">Note croissante</option><option value="4">Note décroissante</option></select></td>
+                    <td class="col-xs-2"><select id="triCoaches" name="optionFilter" class="form-control"><option disabled selected>Filtre</option><option value="1"><span class="glyphicon glyphicon-sort-by-attributes" aria-hidden="true"></span>Prix croissant</option><option value="2"><span class="glyphicon glyphicon-sort-by-attributes" aria-hidden="true"></span>Prix décroissant</option><option value="3"><span class="glyphicon glyphicon-sort-by-attributes" aria-hidden="true"></span>Note croissante</option><option value="4"><span class="glyphicon glyphicon-sort-by-attributes-alt" aria-hidden="true"></span>Note décroissante</option></select></td>
                 </tr>
             </table>
 
@@ -61,6 +62,7 @@ $matiere = $_POST['inputSearch'];
         <script src="./assets/js/connexion.js"></script>
         <script src="./assets/js/inscription.js"></script>
         <script src="./assets/js/calendar.js"></script>
+        <script src="./assets/js/sha1.js"></script>
 
         <script type="text/javascript">
               var green_circle = "./assets/img/green_circle.svg";
@@ -116,7 +118,7 @@ $matiere = $_POST['inputSearch'];
                         var elemCanton = $('<span></span>').text('Canton: ' + d['canton']);
                         var elemStatut = $('<span>Statut: <img src="' + ((d['isOnline'] == true) ? green_circle : red_circle) + '" alt="Statut connexion" height="20" width="20"></span>');
                         var elemTarif = $('<span></span>').text(d['tarif'] + ' CHF/Heure');
-                        var elemRDV = $('<button name="rsv" type="button" class="btn btn-primary" <?php echo ((!isset($_SESSION['_id']) || $_SESSION['type'] == 'Coach') ? 'disabled="disabled"' : ''); ?>>Prendre rendez-vous</button>');
+                        var elemRDV = $('<button name="rsv" type="button" class="btn btn-primary" <?php echo ((!isset($_SESSION['_id']) || $_SESSION['type'] != 'Student') ? 'disabled="disabled"' : ''); ?>>Prendre rendez-vous</button>');
                         var elemNote = $('<span></span>');
                         var elemDispo = $('<span></span>');
 
@@ -308,7 +310,7 @@ $matiere = $_POST['inputSearch'];
                           var elemCanton = $('<span></span>').text('Canton: ' + d['canton']);
                           var elemStatut = $('<span>Statut: <img src="' + ((d['isOnline'] == true) ? green_circle : red_circle) + '" alt="Statut connexion" height="20" width="20"></span>');
                           var elemTarif = $('<span></span>').text(d['tarif'] + ' CHF/Heure');
-                          var elemRDV = $('<button name="rsv" type="button" class="btn btn-primary" <?php echo ((!isset($_SESSION['_id']) || $_SESSION['type'] == 'Coach') ? 'disabled="disabled"' : ''); ?>>Prendre rendez-vous</button>');
+                          var elemRDV = $('<button name="rsv" type="button" class="btn btn-primary" <?php echo ((!isset($_SESSION['_id']) || $_SESSION['type'] != 'Student') ? 'disabled="disabled"' : ''); ?>>Prendre rendez-vous</button>');
                           var elemNote = $('<span></span>');
                           elemNote.append('Note: ' + ((d['note'] == null) ? 'Pas de notes' : '<strong>' + d['note'] + '/10</strong>'));
                           var elemDispo = $('<span></span>');
@@ -442,11 +444,8 @@ $matiere = $_POST['inputSearch'];
                           $('#rsvCalendar').fullCalendar('addEventSource', tabEvents);
                           $('#rsvCalendar').fullCalendar('refetchEvents');
                           $('#fullNameText').text(' - ' + fullName);
-                          $('#myCalendar').modal('show');       
-                          
+                          $('#myCalendar').modal('show');                                 
                           $('#rsvCalendar').fullCalendar('today');
-                          
-                          
                       });
                   });
 
@@ -456,8 +455,7 @@ $matiere = $_POST['inputSearch'];
                   });
                   
                   $('#linkPrevious').click(function(e){
-                      e.preventDefault();
-                      
+                      e.preventDefault();                      
                       window.location.replace("index.php");
                   });
               });
