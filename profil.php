@@ -1,10 +1,18 @@
+<!--
+Travail de Bachelor 2017 - GesTutoring
+Auteur: Miguel Pereira Vieira
+Date: 12.07.2017
+Lieu: Genève
+Version: 1.0
+
+Page de profil pour les utilisateurs
+-->
 <?php
 session_start();
 if (!isset($_SESSION['pseudo'])) {
     header('Location: index.php');
     exit();
 }
-// TODO: Design
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -172,7 +180,6 @@ if (!isset($_SESSION['pseudo'])) {
         <script src="./assets/js/addDatas.js"></script>
 
         <script type="text/javascript">
-
               function checkTabHoursByDay(tab, dateNow) {
                   const tabDefault = [null, null, null, null, null, null, null, null, false, false, false, false, false, false, false, false, false, false, false, false, false];
 
@@ -193,10 +200,10 @@ if (!isset($_SESSION['pseudo'])) {
               var pwdChange = false;
 
               var date = new Date();
-              //date.setUTCHours(date.getUTCHours() + 2);
 
               var myID = "<?php echo $_SESSION['_id'] ?>";
 
+              // Recupère le calendrier d'un répétiteur
               var promiseOfGetPseudo;
               var promiseOfProfil = $.post('http://localhost:4242/getPlanning', {
                   id_user: myID,
@@ -252,6 +259,7 @@ if (!isset($_SESSION['pseudo'])) {
 
                   });
 
+                  // Modifie les informations
                   $('#btnSave').click(function (e) {
                       // On désactive le comportement par défaut du navigateur
                       e.preventDefault();
@@ -328,6 +336,7 @@ if (!isset($_SESSION['pseudo'])) {
                     }
                   );
 
+                  // Recupère un recapitulatif des sessions terminées
                   $.post('http://localhost:4242/getEndedMeeting', {
                       type: '<?php echo $_SESSION['type']; ?>',
                       myID: '<?php echo $_SESSION['_id']; ?>'
@@ -357,31 +366,30 @@ if (!isset($_SESSION['pseudo'])) {
                         }
                     }
                   );
-                  
-                  
+
                   $.post('http://localhost:4242/getPlanning', {
-                    id_user: '<?php echo $_SESSION['_id']; ?>',
-                    dateNow: date.toISOString(),
-                    type: 'Student'
-                    },
-                      function (data) {
-                          $.each(data, function (index, d) {
-                              var myDate = moment(d['date']);
-                                $.getJSON('http://localhost:4242/getNamesById/' + d['id_coach'], function (data1) {
-                                    var coach = data1[0]['prenom'] + ' ' + data1[0]['nom'];                                    
-                                        $.getJSON('http://localhost:4242/getMatiereByID/' + d['id_matiere'], function (data3) {
-                                            var matiere = data3[0]['name'];
-                                            
-                                            $('#listeMeeting').append('<tr><td>' + myDate.format("DD.MM.YYYY à HH:mm") + ' : ' + matiere + ' avec ' + coach + '</td></tr>');
-                                        });
-                                    
+                      id_user: '<?php echo $_SESSION['_id']; ?>',
+                      dateNow: date.toISOString(),
+                      type: 'Student'
+                  },
+                    function (data) {
+                        $.each(data, function (index, d) {
+                            var myDate = moment(d['date']);
+                            $.getJSON('http://localhost:4242/getNamesById/' + d['id_coach'], function (data1) {
+                                var coach = data1[0]['prenom'] + ' ' + data1[0]['nom'];
+                                $.getJSON('http://localhost:4242/getMatiereByID/' + d['id_matiere'], function (data3) {
+                                    var matiere = data3[0]['name'];
 
+                                    $('#listeMeeting').append('<tr><td>' + myDate.format("DD.MM.YYYY à HH:mm") + ' : ' + matiere + ' avec ' + coach + '</td></tr>');
                                 });
-                          });
-                      }
-                    );
 
 
+                            });
+                        });
+                    }
+                  );
+
+                  // Met à jour le calendrier du planning
                   $('#calendar').fullCalendar({
                       locale: 'fr',
                       // enable theme
@@ -441,14 +449,6 @@ if (!isset($_SESSION['pseudo'])) {
                               }
 
                           }
-                      },
-                      eventClick: function (calEvent, jsEvent, view) {
-                          // TODO: Possiblité de modifier les informations d'un événement                    
-                          console.log(calEvent);
-                          console.log(jsEvent);
-                          console.log(view);
-
-                          $(this).css('border-color', 'red');
                       },
                       dayRender: function (date, cell) {
                           if (moment().diff(date, 'days') > 0) {

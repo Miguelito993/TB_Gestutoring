@@ -1,3 +1,12 @@
+<!--
+Travail de Bachelor 2017 - GesTutoring
+Auteur: Miguel Pereira Vieira
+Date: 12.07.2017
+Lieu: Genève
+Version: 1.0
+
+Affiche les répétiteurs
+-->
 <?php
 session_start();
 if (!isset($_POST['submitSearch'])) {
@@ -41,8 +50,6 @@ $matiere = $_POST['inputSearch'];
                     <td class="col-xs-2"><select id="triCoaches" name="optionFilter" class="form-control"><option disabled selected>Filtre</option><option value="1"><span class="glyphicon glyphicon-sort-by-attributes" aria-hidden="true"></span>Prix croissant</option><option value="2"><span class="glyphicon glyphicon-sort-by-attributes" aria-hidden="true"></span>Prix décroissant</option><option value="3"><span class="glyphicon glyphicon-sort-by-attributes" aria-hidden="true"></span>Note croissante</option><option value="4"><span class="glyphicon glyphicon-sort-by-attributes-alt" aria-hidden="true"></span>Note décroissante</option></select></td>
                 </tr>
             </table>
-
-
         </div> <!-- /container -->
 
         <!-- Modal -->
@@ -82,7 +89,6 @@ $matiere = $_POST['inputSearch'];
               var resultRequest;
 
               var date = new Date();
-              //date.setUTCHours(date.getUTCHours() + 2);
 
               var dateLimitRef = new Date(date);
               dateLimitRef.setDate(date.getDate() + 6);
@@ -95,7 +101,6 @@ $matiere = $_POST['inputSearch'];
                   for (var index in stringList) {
                       tmp += (stringList[index] + '<br/>');
                   }
-
                   return tmp;
               }
 
@@ -188,6 +193,7 @@ $matiere = $_POST['inputSearch'];
               );
 
               jQuery(document).ready(function ($) {
+                  // Créer le calendrier pour prendre rendez-vous
                   $('#rsvCalendar').fullCalendar({
                       locale: 'fr',
                       // enable theme
@@ -294,9 +300,7 @@ $matiere = $_POST['inputSearch'];
                           default:
                               break;
                       }
-
-
-
+                      
                       // Affichage de la nouvelle liste des répétiteurs
                       $.each(dataTri, function (index, d) {
 
@@ -315,7 +319,6 @@ $matiere = $_POST['inputSearch'];
                           var elemNote = $('<h3></h3>').addClass('text-center');
                           elemNote.append('Note: ' + ((d['note'] == null) ? 'Pas de notes' : '<strong>' + d['note'] + '/10</strong>'));
                           var elemDispo = $('<span></span>');
-
 
                           promiseOfDispo = $.post('http://localhost:4242/getPlanning', {
                               id_user: d['_id'],
@@ -422,7 +425,7 @@ $matiere = $_POST['inputSearch'];
                   });
 
 
-
+                  // Ouvre une fenêtre pour afficher le calendrier
                   $('#divContainer').on('click', '[name="rsv"]', function () {
                       var idCoach = $(this)[0].parentNode.parentNode.parentNode.childNodes[2].childNodes[1].childNodes[0].value;
                       var name = $(this)[0].parentNode.parentNode.parentNode.childNodes[2].childNodes[0].childNodes[0];

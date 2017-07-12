@@ -1,120 +1,129 @@
-  function StudentAccount() {
-      $('#divEmailParent').show();
-      $('#divEmailParent input').attr('required', 'true');
+/*
+    Travail de Bachelor 2017 - GesTutoring
+    Auteur: Miguel Pereira Vieira
+    Date: 12.07.2017
+    Lieu: Genève
+    Version: 1.0
 
-      //----------------------------------------------------
-      $('#divTarif').hide();
-      $('#divTarif input').removeAttr('required');
-      $('#divTarif input').val("");
+    Fichier JavaScript utile pour les inscriptions
+*/
+function StudentAccount() {
+    $('#divEmailParent').show();
+    $('#divEmailParent input').attr('required', 'true');
 
-      $('#divMatiere').hide();
-      $('#divMatiere select').removeAttr('required');
-      $('#divMatiere select').val("");
+    //----------------------------------------------------
+    $('#divTarif').hide();
+    $('#divTarif input').removeAttr('required');
+    $('#divTarif input').val("");
 
-      $('#divDiplome').hide();
-      $('#divDiplome input').removeAttr('required');
-      $('#divDiplome input').val("");
-      //----------------------------------------------------              
-  }
+    $('#divMatiere').hide();
+    $('#divMatiere select').removeAttr('required');
+    $('#divMatiere select').val("");
 
-  function CoachAccount() {
-      $('#divTarif').show();
-      $('#divTarif input').attr('required', 'true');
+    $('#divDiplome').hide();
+    $('#divDiplome input').removeAttr('required');
+    $('#divDiplome input').val("");
+    //----------------------------------------------------              
+}
 
-      $('#divMatiere').show();
-      $('#divMatiere select').attr('required', 'true');
+function CoachAccount() {
+    $('#divTarif').show();
+    $('#divTarif input').attr('required', 'true');
 
-      $('#divDiplome').show();
-      $('#divDiplome input').attr('required', 'true');
+    $('#divMatiere').show();
+    $('#divMatiere select').attr('required', 'true');
 
-      //----------------------------------------------------
-      $('#divEmailParent').hide();
-      $('#divEmailParent input').removeAttr('required');
-      $('#divEmailParent input').val("");
-      //----------------------------------------------------                
-  }
+    $('#divDiplome').show();
+    $('#divDiplome input').attr('required', 'true');
 
-  $('input[name=inputType]').change(function () {
-      var typeValue = $('input[name=inputType]:checked').val();
+    //----------------------------------------------------
+    $('#divEmailParent').hide();
+    $('#divEmailParent input').removeAttr('required');
+    $('#divEmailParent input').val("");
+    //----------------------------------------------------                
+}
 
-      if (typeValue === "Student") {
-          StudentAccount();
-      } else {
-          CoachAccount();
-      }
-  });
+$('input[name=inputType]').change(function () {
+    var typeValue = $('input[name=inputType]:checked').val();
 
-  jQuery(document).ready(function ($) {
+    if (typeValue === "Student") {
+        StudentAccount();
+    } else {
+        CoachAccount();
+    }
+});
 
-      $('[data-toggle="popover"]').popover();
+jQuery(document).ready(function ($) {
 
-      // Rempli le formulaire des cantons
-      $.getJSON(
-        'http://localhost:4242/getDepartments',
-        function (data) {
-            $.each(data, function (index, d) {
-                $('#inputCity').append("<option>" + d['name'] + "</option>");
-            });
-        }
-      );
+    $('[data-toggle="popover"]').popover();
 
-      // Rempli le formulaire des matières
-      $.getJSON(
-        'http://localhost:4242/getMatieres',
-        function (data) {
-            $.each(data, function (index, d) {
-                $('#inputMatiere').append("<option>" + d['name'] + "</option>");
-            });
-        }
-      );
-
-      $('#inscripForm').submit(function (e) {
-          // On désactive le comportement par défaut du navigateur
-          e.preventDefault();
-
-          // Chiffrement du mot de passe avec sha1
-          $('#inputPassword').val(sha1($('#inputPassword').val()));
-          $('#inputPassword2').val(sha1($('#inputPassword2').val()));
-
-
-          var form = $('#inscripForm')[0];
-          var data = new FormData(form);
-
-          if ($('#inputPassword').val() == $('#inputPassword2').val()) {              
-              $.ajax({
-                  type: "POST",
-                  enctype: 'multipart/form-data',
-                  url: 'http://localhost:4242/submitInscription',
-                  data: data,
-                  processData: false,
-                  contentType: false,
-                  cache: false,
-                  success: function (data) {
-                      console.log("Success: ", data);
-                      $('#alertPopUpInscrip').attr('class', 'alert alert-success');
-                      $('#alertPopUpInscrip').attr('role', 'alert');
-                      $('#alertPopUpInscrip').empty();
-                      $('#alertPopUpInscrip').append("Inscription validé");
-
-                      setTimeout(function () {
-                          $('#myInscription').modal('hide');
-                          window.location.replace('index.php');
-                      }, 2000);
-                  },
-                  error: function (e) {
-                      console.log("Error: ", e);
-                  }
-              });
-          }
-
-          $('#myInscription').on('hide.bs.modal', function () {
-              $(this).find("input,select")
-                .val('')
-                .end();
-
-              $('#submitInscription').attr('value', 'Inscription');
-              $('#alertPopUpInscrip').removeAttr('class');
-              $('#alertPopUpInscrip').empty();
+    // Rempli le formulaire des cantons
+    $.getJSON(
+      'http://localhost:4242/getDepartments',
+      function (data) {
+          $.each(data, function (index, d) {
+              $('#inputCity').append("<option>" + d['name'] + "</option>");
           });
-      });
-  });
+      }
+    );
+
+    // Rempli le formulaire des matières
+    $.getJSON(
+      'http://localhost:4242/getMatieres',
+      function (data) {
+          $.each(data, function (index, d) {
+              $('#inputMatiere').append("<option>" + d['name'] + "</option>");
+          });
+      }
+    );
+
+    $('#inscripForm').submit(function (e) {
+        // On désactive le comportement par défaut du navigateur
+        e.preventDefault();
+
+        // Chiffrement du mot de passe avec sha1
+        $('#inputPassword').val(sha1($('#inputPassword').val()));
+        $('#inputPassword2').val(sha1($('#inputPassword2').val()));
+
+
+        var form = $('#inscripForm')[0];
+        var data = new FormData(form);
+
+        if ($('#inputPassword').val() == $('#inputPassword2').val()) {              
+            $.ajax({
+                type: "POST",
+                enctype: 'multipart/form-data',
+                url: 'http://localhost:4242/submitInscription',
+                data: data,
+                processData: false,
+                contentType: false,
+                cache: false,
+                success: function (data) {
+                    console.log("Success: ", data);
+                    $('#alertPopUpInscrip').attr('class', 'alert alert-success');
+                    $('#alertPopUpInscrip').attr('role', 'alert');
+                    $('#alertPopUpInscrip').empty();
+                    $('#alertPopUpInscrip').append("Inscription validé");
+
+                    setTimeout(function () {
+                        $('#myInscription').modal('hide');
+                        window.location.replace('index.php');
+                    }, 2000);
+                },
+                error: function (e) {
+                    console.log("Error: ", e);
+                }
+            });
+        }
+
+        $('#myInscription').on('hide.bs.modal', function () {
+            $(this).find("input,select")
+              .val('')
+              .end();
+
+            $('#submitInscription').attr('value', 'Inscription');
+            $('#alertPopUpInscrip').removeAttr('class');
+            $('#alertPopUpInscrip').empty();
+        });
+    });
+});

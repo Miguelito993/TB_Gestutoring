@@ -1,3 +1,12 @@
+/*
+    Travail de Bachelor 2017 - GesTutoring
+    Auteur: Miguel Pereira Vieira
+    Date: 12.07.2017
+    Lieu: Genève
+    Version: 1.0
+
+    Fichier JavaScript utile pour le calendrier
+*/
 function transformDateStartToEnd(dateStart, duration) {
     var tmp = new Date(dateStart);
     tmp.setUTCHours(tmp.getUTCHours() + duration)
@@ -43,8 +52,6 @@ jQuery(document).ready(function ($) {
                 $('#myEvent').modal('hide');
             }
         );
-
-
 
         $('#myEvent').on('hide.bs.modal', function (e) {
             $('#inputDate').val('');

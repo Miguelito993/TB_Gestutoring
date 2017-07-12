@@ -1,7 +1,14 @@
-jQuery(document).ready(function ($) {
+/*
+    Travail de Bachelor 2017 - GesTutoring
+    Auteur: Miguel Pereira Vieira
+    Date: 12.07.2017
+    Lieu: Genève
+    Version: 1.0
 
-    $('[data-toggle="popoverKey"]').popover({html: true});
-    
+    Fichier JavaScript utile pour ajouter du contenu
+*/
+jQuery(document).ready(function ($) {
+    $('[data-toggle="popoverKey"]').popover({html: true});    
     $('#linkAddDatas').click(function (e) {
         e.preventDefault();
 

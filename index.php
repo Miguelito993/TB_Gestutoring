@@ -1,3 +1,12 @@
+<!--
+Travail de Bachelor 2017 - GesTutoring
+Auteur: Miguel Pereira Vieira
+Date: 12.07.2017
+Lieu: Genève
+Version: 1.0
+
+Page d'accueil
+-->
 <?php
 session_start();
 ?>
@@ -41,7 +50,7 @@ session_start();
 
             <div class="table-responsive">
                 <table id="listCoaches" class="table">  
-                    
+
                 </table>
             </div>
 
@@ -83,7 +92,8 @@ session_start();
                     });
                 }
               );
-
+              
+              // Auto-complétion de l'input
               $('#inputSearch').autocomplete({
                   source: subject
               });
@@ -154,7 +164,6 @@ session_start();
                   });
                   // ===========================================================
               });
-
         </script>
     </body>
 </html>

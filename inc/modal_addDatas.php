@@ -1,3 +1,12 @@
+<!--
+    Travail de Bachelor 2017 - GesTutoring
+    Auteur: Miguel Pereira Vieira
+    Date: 12.07.2017
+    Lieu: Genève
+    Version: 1.0
+
+    Fenêtre modal pour ajouter du contenu additionnel
+-->
 <div class="modal fade bs-example-modal-lg" id="myAddDatas" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"  data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
