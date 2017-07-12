@@ -91,9 +91,6 @@
       }
   });
 
-
-
-
   var upload = multer({storage: storage}).any();
   var uploadDatas = multer({storage: storageDatas}).any();
 
@@ -194,12 +191,21 @@
   var getCoaches = function (db, matiere, callback) {
       var collection = db.collection('t_users');
 
-      collection.find({type: "Coach", isValid: true, matieres: matiere}).sort({tarif: 1}).toArray(
-        function (err, docs) {
-            assert.equal(err, null);
-            callback(docs);
-        }
-      );
+      if (matiere != 'null') {
+          collection.find({type: "Coach", isValid: true, matieres: matiere}).sort({tarif: 1}).toArray(
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            }
+          );
+      } else {
+          collection.find({type: "Coach", isValid: true}).sort({tarif: 1}).toArray(
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            }
+          );
+      }
   }
 
   var getNotation = function (db, info, callback) {

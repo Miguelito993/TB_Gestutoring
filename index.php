@@ -39,6 +39,11 @@ session_start();
                 </div>
             </form>            
 
+            <div class="table-responsive">
+                <table id="listCoaches" class="table">  
+                    
+                </table>
+            </div>
 
         </div> <!-- /container -->
 
@@ -62,6 +67,9 @@ session_start();
         <script src="./assets/js/addDatas.js"></script>
         <script type="text/javascript">
               var subject = [];
+              var tabCoaches;
+
+              var promOfNotation;
 
               var matiere;
               var pseudoPartner;
@@ -75,47 +83,6 @@ session_start();
                     });
                 }
               );
-
-              // TODO: Mettre en place des informations pour remplir la page, tant pour les utilisateurs connecté que pour les déconnectés
-              /*
-               $.get(
-               'http://localhost:4242/getMatiereIDByName/Géographie',
-               function (mat) {
-               console.log(mat[0]._id);
-               }
-               );
-               
-               
-               
-               
-               
-               $.get(
-               'http://localhost:4242/getFile/img/Thor.png',
-               function (file) {
-               console.log(file);
-               $('#imgTest').attr('src', file);
-               }
-               );
-               
-               
-               $.get(                
-               'http://localhost:4242/getDataList/Anglais/593fcce24f53f02754cc352c',
-               function (data) {  
-               //console.log(data);
-               
-               
-               //var dataBlob = new Blob([data], {type: 'text/plain'});
-               //var dataFile = new File([data], "exercice.pdf", {type: "application/pdf", lastModified: Date.now()});
-               //console.log(dataBlob);
-               //console.log(dataFile);
-               //urlBlob = window.URL.createObjectURL(dataBlob);
-               //urlFile = window.URL.createObjectURL(dataFile);
-               //console.log(urlBlob);           
-               //console.log(urlFile);   
-               
-               }
-               ); 
-               */
 
               $('#inputSearch').autocomplete({
                   source: subject
