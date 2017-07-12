@@ -106,9 +106,6 @@ $matiere = $_POST['inputSearch'];
                     resultRequest = data;
 
                     $.each(data, function (index, d) {
-                        // TODO: Compléter les informations des utilisateurs dans un tableau et l'affiche ensuite.
-                        //       Pour pouvoir ensuite utiliser les filtres plus facilement avec JavaScript
-
                         var elemCoach = $('<div></div>').addClass('listCoach').addClass('table-responsive').attr('id', d['pseudo']);
                         var elemTabBody = $('<table></table').addClass('table');
 

@@ -17,9 +17,6 @@ jQuery(document).ready(function ($) {
         );
     });
     
-
-    
-
     $('#addDatasForm').submit(function (e) {
         // On désactive le comportement par défaut du navigateur
         e.preventDefault();             
@@ -44,7 +41,7 @@ jQuery(document).ready(function ($) {
 
                 setTimeout(function () {
                     $('#myAddDatas').modal('hide');
-                    //window.location.replace('index.php');
+                    window.location.replace('index.php');
                 }, 2000);
             },
             error: function (e) {

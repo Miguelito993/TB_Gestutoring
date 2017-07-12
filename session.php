@@ -44,7 +44,7 @@ session_start();
             <div class="table-responsive">
                 <table class="table">
                     <tr>
-                        <td colspan="2" class="col-xs-12"><h2 id="titleSession" hidden></h2></td>
+                        <td colspan="2" class="col-xs-12"><h2 id="titleSession" style="text-align: center;" hidden></h2></td>
                     </tr>
                     <tr>                
                         <td class="col-xs-8"><div id="chatbox" class="connection form-control" hidden></div></td>
@@ -113,6 +113,7 @@ session_start();
         <script src="./bootstrap/js/bootstrap.js"></script>
         <script src="./assets/js/spin.min.js"></script>
         <script src="./assets/js/session.js"></script>
+        <script src="./assets/js/sha1.js"></script>
         <script>
             // Compatibility shim
             navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
@@ -139,6 +140,8 @@ session_start();
                 , hwaccel: false // Whether to use hardware acceleration
                 , position: 'absolute' // Element positioning
             }
+            
+                       
 
             // No API key required when not using cloud server
             var peer = new Peer('<?php echo $_SESSION['_id']; ?>', {host: 'localhost', port: 4242, path: '/peerjs'});
@@ -163,9 +166,7 @@ session_start();
                         partnerID = ('<?php echo $_SESSION['type']; ?>' == 'Coach') ? d['id_student'] : d['id_coach'];
                         var myIDMatiere = d['id_matiere'];
 
-                        // Réservation ok
-                        //TODO: Ne pas oublier de remodifier les valeurs du temps pour une période +- 5 minutes
-                        if (myDate.isBetween(moment().subtract(45, 'minutes'), moment().add(45, 'minutes'))) {
+                        if (myDate.isBetween(moment().subtract(5, 'minutes'), moment().add(5, 'minutes'))) {
                             promiseOfMatiere = $.get(
                                 'http://localhost:4242/getMatiereByID/' + myIDMatiere
                                 );
@@ -293,6 +294,7 @@ session_start();
 
                 // UI stuff
                 window.existingCall = call;
+                
                 $('#their-id').text(call.peer);
                 call.on('close', cleanVars);
                 $('#step1, #step2').hide();
@@ -300,8 +302,6 @@ session_start();
                 $('#step3, #video-container-1, #video-container-2, #chatbox, #searchData, #titleSession, #send').show();
                 $('#titleSession').text("Session de chat avec " + partner);
                 $('#infoUtil').append('<h4>' + matiere + '</h4>');
-                // TODO: Ajouter un chronomètre 
-
             }
 
             function cleanVars() {
@@ -325,30 +325,8 @@ session_start();
 
                 console.log("Destroy peer");
                 console.log(peer);
-                //window.location.replace(index.php);
-                
-                //TODO: Prévoir d'afficher la durée de la session et l'argent dépensé/gagné
-            }
-                
-            /* 
-            //Alternative des lignes de codes suivantes      
-                promiseOfMeeting.done(function (data) {
-                idSession = data.idSession;
-
-                promiseOfMatiere.done(function (mat) {
-                    matiere = mat[0].name;
-                    promiseOfPartner.done(function (user) {
-                        partner = user[0].pseudo;
-
-                        if ('<?php echo $_SESSION['type']; ?>' == 'Coach') {
-                            socket.emit('nouveau_client', {pseudo: '<?php echo $_SESSION['pseudo']; ?>', myID: '<?php echo $_SESSION['_id']; ?>', type: '<?php echo $_SESSION['type']; ?>', tarif: '<?php echo $_SESSION['tarif']; ?>', myPartner: partner});
-                        } else {
-                            socket.emit('nouveau_client', {pseudo: '<?php echo $_SESSION['pseudo']; ?>', myID: '<?php echo $_SESSION['_id']; ?>', type: '<?php echo $_SESSION['type']; ?>', myPartner: partner});
-                        }                        
-                    });
-                });
-            });
-            */
+                window.location.replace(index.php);
+            }              
                
             promiseOfMeeting.then(function (data) {                
                 idSession = data.idSession;                
