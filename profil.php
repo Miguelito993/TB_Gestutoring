@@ -4,6 +4,7 @@ if (!isset($_SESSION['pseudo'])) {
     header('Location: index.php');
     exit();
 }
+// TODO: Design
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -34,7 +35,7 @@ if (!isset($_SESSION['pseudo'])) {
             <div id="divInfoProfil" class="table-responsive">
                 <table class="table">  
                     <tr>
-                        <td colspan="3">Infos personnelle</td>    
+                        <td colspan="3"><h2 class="text-center">Infos personnelle</h2></td>    
                     </tr>
                     <tr>
                         <td class="col-xs-2">Prénom</td>
@@ -114,11 +115,13 @@ if (!isset($_SESSION['pseudo'])) {
                     </tr>
                 </table>
             </div>
+            <?php
+            if ($_SESSION['type'] == 'Coach') {
 
-            <table id="tabCalendar" class="table" hidden>
+                echo '<table id="tabCalendar" class="table">
                 <tr>
                     <td>
-                        <h2>Planning</h2>
+                        <h2 class="text-center">Planning</h2>
                     </td>
                 </tr>
                 <tr>
@@ -126,15 +129,24 @@ if (!isset($_SESSION['pseudo'])) {
                         <div id="calendar"></div>
                     </td>
                 </tr>
-            </table>
-
-            <table id="lastActivities" class="table">
+            </table>';
+            } else {
+                echo '<table id="listeMeeting" class="table">
                 <tr>
                     <td>
-                        <h2>Dernières activités</h2>
+                        <h2 class="text-center">Prochain rendez-vous</h2>
                     </td>
                 </tr>
 
+            </table>';
+            }
+            ?>
+            <table id="lastActivities" class="table">
+                <tr>
+                    <td>
+                        <h2 class="text-center">Dernières activités</h2>
+                    </td>
+                </tr>
             </table>
 
         </div> <!-- /container -->   
@@ -187,8 +199,9 @@ if (!isset($_SESSION['pseudo'])) {
 
               var promiseOfGetPseudo;
               var promiseOfProfil = $.post('http://localhost:4242/getPlanning', {
-                  id_coach: myID,
-                  dateNow: date.toISOString()
+                  id_user: myID,
+                  dateNow: date.toISOString(),
+                  type: 'Coach'
               },
                 function (data) {
                     $.each(data, function (index, d) {
@@ -344,6 +357,29 @@ if (!isset($_SESSION['pseudo'])) {
                         }
                     }
                   );
+                  
+                  
+                  $.post('http://localhost:4242/getPlanning', {
+                    id_user: '<?php echo $_SESSION['_id']; ?>',
+                    dateNow: date.toISOString(),
+                    type: 'Student'
+                    },
+                      function (data) {
+                          $.each(data, function (index, d) {
+                              var myDate = moment(d['date']);
+                                $.getJSON('http://localhost:4242/getNamesById/' + d['id_coach'], function (data1) {
+                                    var coach = data1[0]['prenom'] + ' ' + data1[0]['nom'];                                    
+                                        $.getJSON('http://localhost:4242/getMatiereByID/' + d['id_matiere'], function (data3) {
+                                            var matiere = data3[0]['name'];
+                                            
+                                            $('#listeMeeting').append('<tr><td>' + myDate.format("DD.MM.YYYY à HH:mm") + ' : ' + matiere + ' avec ' + coach + '</td></tr>');
+                                        });
+                                    
+
+                                });
+                          });
+                      }
+                    );
 
 
                   $('#calendar').fullCalendar({

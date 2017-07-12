@@ -134,9 +134,11 @@ $matiere = $_POST['inputSearch'];
                         );
 
                         promiseOfDispo = $.post('http://localhost:4242/getPlanning', {
-                            id_coach: d['_id'],
+                            id_user: d['_id'],
                             dateLimit: dateLimitRef.toISOString(),
-                            dateNow: date.toISOString()},
+                            dateNow: date.toISOString(),
+                            type: 'Coach'
+                        },
                           function (dataPlanning) {
                               const tabDefault = [null, null, null, null, null, null, null, null, false, false, false, false, false, false, false, false, false, false, false, false, false];
                               var isDayFree = false;
@@ -319,9 +321,11 @@ $matiere = $_POST['inputSearch'];
 
 
                           promiseOfDispo = $.post('http://localhost:4242/getPlanning', {
-                              id_coach: d['_id'],
+                              id_user: d['_id'],
                               dateLimit: dateLimitRef.toISOString(),
-                              dateNow: date.toISOString()},
+                              dateNow: date.toISOString(),
+                              type: 'Coach'
+                          },
                             function (dataPlanning) {
                                 const tabDefault = [null, null, null, null, null, null, null, null, false, false, false, false, false, false, false, false, false, false, false, false, false];
                                 var isDayFree = false;
@@ -387,9 +391,11 @@ $matiere = $_POST['inputSearch'];
                       promiseOfIdPseudo = $.get('http://localhost:4242/getIdByPseudo/' + pseudo,
                         function (user) {
                             promiseOfTabHours = $.post('http://localhost:4242/getPlanning', {
-                                id_coach: user[0]._id,
+                                id_user: user[0]._id,
                                 dateLimit: myDateLimitRef.toISOString(),
-                                dateNow: myDate.toISOString()},
+                                dateNow: myDate.toISOString(),
+                                type : 'Coach'
+                            },
                               function (dataPop) {
                                   for (var j = 0; j < dataPop.length; j++) {
                                       var tmpDate = new Date(dataPop[j].date);
@@ -426,8 +432,10 @@ $matiere = $_POST['inputSearch'];
                       var fullName = name.outerHTML.substr(6, name.outerHTML.length - 13);
 
                       promiseOfPlanning = $.post('http://localhost:4242/getPlanning', {
-                          id_coach: idCoach,
-                          dateNow: date.toISOString()},
+                          id_user: idCoach,
+                          dateNow: date.toISOString(),
+                          type: 'Coach'
+                      },
                         function (data) {
                             $.each(data, function (index, d) {
                                 var myTitle = (d['isFree'] == true) ? "Libre" : (d['id_student'] == '<?php echo $_SESSION['_id']; ?>') ? '<?php echo $_SESSION['pseudo']; ?>' : 'Occupé';

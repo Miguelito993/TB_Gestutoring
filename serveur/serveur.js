@@ -21,7 +21,7 @@
     assert = require('assert'),
     util = require('util'), // Afficher le contenu des objets
     bodyParser = require('body-parser'), // Permet de récupérer les paramètres d'une requête POST
-    ExpressPeerServer = require('peer').ExpressPeerServer; 
+    ExpressPeerServer = require('peer').ExpressPeerServer;
 
 
   var storage = multer.diskStorage({
@@ -34,8 +34,8 @@
       },
       filename: function (req, file, callback) {
           var user = parseUserInfo(req.body, file.mimetype.split('/'));
-          
-          if (file.mimetype == 'application/pdf') {             
+
+          if (file.mimetype == 'application/pdf') {
               MongoClient.connect(urlDB, function (err, db) {
                   assert.equal(err, null);
 
@@ -54,11 +54,11 @@
               });
 
               callback(null, user.diplomes);
-          } else if (file.mimetype.split('/')[0] == 'image') {               
+          } else if (file.mimetype.split('/')[0] == 'image') {
               MongoClient.connect(urlDB, function (err, db) {
-                    assert.equal(err, null);                 
-                                     
-                    setTimeout(checkLogin(db, {pseudo: user.pseudo, password: user.pwd}, function (docs) {
+                  assert.equal(err, null);
+
+                  setTimeout(checkLogin(db, {pseudo: user.pseudo, password: user.pwd}, function (docs) {
                       if (docs[0] == null) {
                           // Ajouter le nouvel utilisateur avec son image de profil
                           insertUser(db, user);
@@ -68,36 +68,36 @@
                           addImageProfile(db, user);
                       }
                       db.close();
-                  }), 1000);              
-              });              
+                  }), 1000);
+              });
               callback(null, user.imgProfil);
           }
       }
   });
-  
+
   var storageDatas = multer.diskStorage({
-      destination: function (req, file, callback) {          
-        callback(null, './datas');          
+      destination: function (req, file, callback) {
+          callback(null, './datas');
       },
-      filename: function (req, file, callback) {          
-          var datas = parseDatasInfo(req.body);          
-                     
-              MongoClient.connect(urlDB, function (err, db) {
-                  assert.equal(err, null);
-                  insertDatas(db, datas);                      
-                  db.close();                  
-              });
-              callback(null, datas.fichier);          
+      filename: function (req, file, callback) {
+          var datas = parseDatasInfo(req.body);
+
+          MongoClient.connect(urlDB, function (err, db) {
+              assert.equal(err, null);
+              insertDatas(db, datas);
+              db.close();
+          });
+          callback(null, datas.fichier);
       }
   });
-  
-  
-  
+
+
+
 
   var upload = multer({storage: storage}).any();
   var uploadDatas = multer({storage: storageDatas}).any();
 
-  function parseUserInfo(body, myFile) {      
+  function parseUserInfo(body, myFile) {
       var fileStatus = (myFile != null);
       var user = {
           id: body.id,
@@ -110,7 +110,7 @@
           soldes: 0,
           type: body.inputType,
           isOnline: false,
-          imgProfil: (fileStatus)?((myFile[0] == 'image')?ent.encode(body.inputPseudo)+'.'+myFile[1]:null):null,
+          imgProfil: (fileStatus) ? ((myFile[0] == 'image') ? ent.encode(body.inputPseudo) + '.' + myFile[1] : null) : null,
           emailParent: (body.inputType === "Student") ? ent.encode(body.inputEmailParent) : null,
           diplomes: (body.inputType === "Coach") ? 'dipl_' + ent.encode(body.inputPseudo) + '_' + Date.now() + '.pdf' : null,
           tarif: (body.inputType === "Coach") ? ent.encode(body.inputTarif) : null,
@@ -119,11 +119,11 @@
       }
       return user;
   }
-  
-  function parseDatasInfo(body) {      
+
+  function parseDatasInfo(body) {
       var datas = {
           typeData: body.ad_inputType,
-          fichier: body.ad_inputType+'_'+Date.now()+'.pdf',
+          fichier: body.ad_inputType + '_' + Date.now() + '.pdf',
           keywords: body.ad_inputKeyword.split(';'),
           access: body.ad_Access,
           idMatiere: body.ad_inputMatiere,
@@ -192,7 +192,7 @@
   }
 
   var getCoaches = function (db, matiere, callback) {
-      var collection = db.collection('t_users');     
+      var collection = db.collection('t_users');
 
       collection.find({type: "Coach", isValid: true, matieres: matiere}).sort({tarif: 1}).toArray(
         function (err, docs) {
@@ -215,10 +215,9 @@
 
   var getPlanning = function (db, info, callback) {
       var collection = db.collection('t_meetings');
-      //console.log(util.inspect(info, {showHidden: true, depth: null, colors: true}));
 
       collection.aggregate([
-          {$match: {id_coach: ObjectId(info.id_coach)}},
+          {$match: {id_coach: ObjectId(info.id_user)}},
           {$match: {date: {$lt: new Date(info.dateLimit), $gt: new Date(info.dateNow)}}},
           {$sort: {date: 1}}
       ]).toArray(
@@ -232,16 +231,29 @@
   var getAllPlanning = function (db, info, callback) {
       var collection = db.collection('t_meetings');
 
-      collection.aggregate([
-          {$match: {id_coach: ObjectId(info.id_coach)}},
-          {$match: {date: {$gt: new Date(info.dateNow)}}},
-          {$sort: {date: 1}}
-      ]).toArray(
-        function (err, docs) {
-            assert.equal(err, null);
-            callback(docs);
-        }
-      );
+      if (info.type == 'Coach') {
+          collection.aggregate([
+              {$match: {id_coach: ObjectId(info.id_user)}},
+              {$match: {date: {$gt: new Date(info.dateNow)}}},
+              {$sort: {date: 1}}
+          ]).toArray(
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            }
+          );
+      } else {
+          collection.aggregate([
+              {$match: {id_student: ObjectId(info.id_user)}},
+              {$match: {date: {$gt: new Date(info.dateNow)}}},
+              {$sort: {date: 1}}
+          ]).toArray(
+            function (err, docs) {
+                assert.equal(err, null);
+                callback(docs);
+            }
+          );
+      }
   }
 
   var submitMeeting = function (db, info, callback) {
@@ -295,7 +307,7 @@
           );
       }
   }
-  
+
   var getUserById = function (db, info, callback) {
       var collection = db.collection('t_users');
 
@@ -308,7 +320,7 @@
           );
       }
   }
-  
+
   var getNamesById = function (db, info, callback) {
       var collection = db.collection('t_users');
 
@@ -441,7 +453,7 @@
           );
       }
   }
-  
+
   var deleteDiplome = function (db, info, callback) {
       var collection = db.collection('t_users');
 
@@ -452,7 +464,7 @@
         }
       );
   }
-  
+
   var getEndedMeeting = function (db, info, callback) {
       var collection = db.collection('t_meetings');
 
@@ -473,18 +485,18 @@
           );
       }
   }
-  
+
   var getUserInvalid = function (db, callback) {
       var collection = db.collection('t_users');
-      
-        collection.find({isValid: false}).toArray(
-          function (err, docs) {
-              assert.equal(err, null);
-              callback(docs);
-          });
-      
+
+      collection.find({isValid: false}).toArray(
+        function (err, docs) {
+            assert.equal(err, null);
+            callback(docs);
+        });
+
   }
-  
+
   var validUser = function (db, info, callback) {
       var collection = db.collection('t_users');
 
@@ -495,7 +507,7 @@
         }
       );
   }
-  
+
   var insertDatas = function (db, datas) {
       var collection = db.collection('t_datas');
 
@@ -505,7 +517,7 @@
           keywords: datas.keywords,
           access: datas.access,
           id_user: ObjectId(datas.idUser),
-          id_matiere: ObjectId(datas.idMatiere)          
+          id_matiere: ObjectId(datas.idMatiere)
       }, function (err) {
           assert.equal(err, null);
       });
@@ -544,7 +556,7 @@
         }
       );
   }
-  
+
   var addImageProfile = function (db, user) {
       var collection = db.collection('t_users');
 
@@ -594,13 +606,13 @@
       MongoClient.connect(urlDB, function (err, db) {
           assert.equal(err, null);
 
-          checkLogin(db, user, function (docs) {              
+          checkLogin(db, user, function (docs) {
               if (docs[0] != null) {
-                    if(docs[0].isValid == true){
-                        res.jsonp({status: 'Success', docs});
-                    }else{
-                        res.jsonp({status: 'NotValid'});
-                    }
+                  if (docs[0].isValid == true) {
+                      res.jsonp({status: 'Success', docs});
+                  } else {
+                      res.jsonp({status: 'NotValid'});
+                  }
               } else {
                   res.jsonp({status: 'Failed'});
               }
@@ -626,16 +638,16 @@
   });
 
   app.post('/submitInscription', function (req, res) {
-      upload(req, res, function (err) {         
+      upload(req, res, function (err) {
           if (err) {
               return res.send(err);
           }
           res.send("Inscription is done");
       });
   });
-  
-  app.post('/submitDatas', function (req, res) {      
-      uploadDatas(req, res, function (err) {         
+
+  app.post('/submitDatas', function (req, res) {
+      uploadDatas(req, res, function (err) {
           if (err) {
               return res.send(err);
           }
@@ -674,9 +686,9 @@
   });
 
   app.post('/getPlanning', function (req, res) {
-      var info = {"id_coach": req.body.id_coach, "dateLimit": req.body.dateLimit, "dateNow": req.body.dateNow};
+      var info = {"id_user": req.body.id_user, "dateLimit": req.body.dateLimit, "dateNow": req.body.dateNow, "type": req.body.type};
 
-      if (info.id_coach != null) {
+      if (info.id_user != null) {
           MongoClient.connect(urlDB, function (err, db) {
               assert.equal(err, null);
 
@@ -730,7 +742,7 @@
                           }
                       }
                   }
-                  
+
                   res.jsonp(dataList);
                   db.close();
               });
@@ -767,7 +779,7 @@
           res.send(null);
       }
   });
-  
+
   app.get('/getUserById/:idUser', function (req, res) {
       var info = req.params.idUser;
 
@@ -784,7 +796,7 @@
           res.send(null);
       }
   });
-  
+
   app.get('/getNamesById/:idUser', function (req, res) {
       var info = req.params.idUser;
 
@@ -801,7 +813,7 @@
           res.send(null);
       }
   });
-  
+
 
   app.post('/getMeeting', function (req, res) {
       var info = {"type": req.body.type, "myID": req.body.myID};
@@ -932,8 +944,8 @@
           });
       }
   });
-  
-   app.post('/deleteDiplome', function (req, res) {
+
+  app.post('/deleteDiplome', function (req, res) {
       var info = {"id": req.body.id, "diplome": req.body.diplome};
 
       if ((info.id != null) && (info.diplome != null)) {
@@ -947,7 +959,7 @@
           });
       }
   });
-  
+
   app.post('/getEndedMeeting', function (req, res) {
       var info = {"type": req.body.type, "myID": req.body.myID};
 
@@ -962,8 +974,8 @@
           });
       }
   });
-  
-  app.get('/getUserInvalid', function (req, res) { 
+
+  app.get('/getUserInvalid', function (req, res) {
       MongoClient.connect(urlDB, function (err, db) {
           assert.equal(err, null);
 
@@ -973,7 +985,7 @@
           });
       });
   });
-  
+
   app.post('/validUser', function (req, res) {
       var info = {"id": req.body.id};
 
