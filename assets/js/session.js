@@ -14,11 +14,11 @@ jQuery(document).ready(function ($) {
         $('#matiereText').text(matiere);
 
         $.getJSON(
-            'http://localhost:4242/getIdByPseudo/' + partner,
+            'http://localhost:4242/getIdByPseudo/' + myPseudo,
             function (idCoach) {
                 $.getJSON(
                     'http://localhost:4242/getDataList/' + matiere + '/'+idCoach[0]._id,
-                    function (data) {                           
+                    function (data) {   
                         var indexPublic = 1;
                         var indexPrivate = 1;
                         $.each(data, function (index, d) {
@@ -57,16 +57,16 @@ jQuery(document).ready(function ($) {
 
         if(note != null){
         var comment = $('#inputComment').val();        
-        var idUser = $('#idUser').val();
+        var idUser = $('#idUser').val();        
         
         $.post('http://localhost:4242/submitNotation', {
             note: note,
             comment: comment,
             id_coach: idUser,            
         },
-            function (data) {
-                console.log(data)
+            function (data) {                
                 $('#myNotation').modal('hide');
+                window.location.replace('index.php');
             }
         );
 

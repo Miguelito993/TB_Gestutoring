@@ -87,6 +87,8 @@ $matiere = $_POST['inputSearch'];
 
               var tarifCoach = [];
               var resultRequest;
+              
+              
 
               var date = new Date();
 
@@ -192,65 +194,67 @@ $matiere = $_POST['inputSearch'];
                 }
               );
 
-              jQuery(document).ready(function ($) {
-                  // Créer le calendrier pour prendre rendez-vous
-                  $('#rsvCalendar').fullCalendar({
-                      locale: 'fr',
-                      // enable theme
-                      theme: true,
-                      // emphasizes business hours
-                      businessHours: true,
-                      // header
-                      header: {
-                          left: 'prev,next today',
-                          center: 'title',
-                          right: 'month,agendaWeek,agendaDay'},
-                      selectable: true,
+              jQuery(document).ready(function ($) {                    
+                  
+                    // Créer le calendrier pour prendre rendez-vous
+                    $('#rsvCalendar').fullCalendar({
+                        locale: 'fr',
+                        // enable theme
+                        theme: true,
+                        // emphasizes business hours
+                        businessHours: true,
+                        // header
+                        header: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'month,agendaWeek,agendaDay'},
+                        selectable: true,
 
-                      eventLimit: true,
+                        eventLimit: true,
 
-                      eventSources: [],
+                        eventSources: [],
 
-                      eventClick: function (calEvent, jsEvent, view) {
-                          var pseudoCoach = $('#pseudoText').val();
-                          if (calEvent.editable) {
-                              if (tarifCoach[pseudoCoach] <= parseInt('<?php echo $_SESSION['soldes']; ?>')) {
-                                  if (confirm("Voulez-vous réserver la séance à " + moment(calEvent.start).format("HH:mm") + "?")) {
-                                      var idMeeting = calEvent.id;
-                                      var idStudent = '<?php
-                                                            if (isset($_SESSION['_id'])) {
-                                                                echo $_SESSION['_id'];
-                                                            }
-                                                        ?>';
-                                      $.get(
-                                        'http://localhost:4242/getMatiereIDByName/<?php echo $matiere; ?>',
-                                        function (mat) {
-                                            console.log(mat);
-                                            $.post('http://localhost:4242/makeMeeting', {
-                                                idMeeting: idMeeting,
-                                                idStudent: idStudent,
-                                                idMatiere: mat[0]._id
-                                            },
-                                              function (data) {
-                                                  console.log(data);
-                                                  $('#rsvCalendar').fullCalendar('refetchEvents');
+                        eventClick: function (calEvent, jsEvent, view) {
+                            var pseudoCoach = $('#pseudoText').val();
+                            if (calEvent.editable) {
+                                if (tarifCoach[pseudoCoach] <= parseInt('<?php if(isset($_SESSION['_id'])){echo $_SESSION['soldes'];}else{ echo 0; } ?>')) {
+                                    if (confirm("Voulez-vous réserver la séance à " + moment(calEvent.start).format("HH:mm") + "?")) {
+                                        var idMeeting = calEvent.id;
+                                        var idStudent = '<?php
+                                                              if (isset($_SESSION['_id'])) {
+                                                                  echo $_SESSION['_id'];
+                                                              }
+                                                          ?>';
+                                        $.get(
+                                          'http://localhost:4242/getMatiereIDByName/<?php echo $matiere; ?>',
+                                          function (mat) {
+                                              console.log(mat);
+                                              $.post('http://localhost:4242/makeMeeting', {
+                                                  idMeeting: idMeeting,
+                                                  idStudent: idStudent,
+                                                  idMatiere: mat[0]._id
+                                              },
+                                                function (data) {
+                                                    console.log(data);
+                                                    $('#rsvCalendar').fullCalendar('refetchEvents');
 
-                                                  $('#myCalendar').modal('hide');
-                                                  $("#alertPopUpCalendar").attr('class', 'alert alert-success alert-dismissible');
-                                                  $("#alertPopUpCalendar").empty();
-                                                  $("#alertPopUpCalendar").append("Votre rendez-vous a été marqué pour le " + moment(calEvent.start).format("DD MMMM YYYY") + " à " + moment(calEvent.start).format("HH:mm"));
-                                              }
-                                            );
-                                        }
-                                      );
-                                  }
-                              } else {
-                                  alert('Votre soldes ne permet pas de réserver une heure avec ce coach');
-                              }
-                          }
-                      }
-                  });
-
+                                                    $('#myCalendar').modal('hide');
+                                                    $("#alertPopUpCalendar").attr('class', 'alert alert-success alert-dismissible');
+                                                    $("#alertPopUpCalendar").empty();
+                                                    $("#alertPopUpCalendar").append("Votre rendez-vous a été marqué pour le " + moment(calEvent.start).format("DD MMMM YYYY") + " à " + moment(calEvent.start).format("HH:mm"));
+                                                }
+                                              );
+                                          }
+                                        );
+                                    }
+                                } else {
+                                    alert('Votre soldes ne permet pas de réserver une heure avec ce coach');
+                                }
+                            }
+                        }
+                    });
+                  
+                  
                   $('select[name=optionFilter]').change(function () {
                       var filterChoice = $('#filterStatut option:selected').text();
                       var triChoice = $('#triCoaches option:selected').text();
@@ -429,25 +433,26 @@ $matiere = $_POST['inputSearch'];
                   $('#divContainer').on('click', '[name="rsv"]', function () {
                       var idCoach = $(this)[0].parentNode.parentNode.parentNode.childNodes[2].childNodes[1].childNodes[0].value;
                       var name = $(this)[0].parentNode.parentNode.parentNode.childNodes[2].childNodes[0].childNodes[0];
-                      var fullName = name.outerHTML.substr(6, name.outerHTML.length - 13);
-
-                      promiseOfPlanning = $.post('http://localhost:4242/getPlanning', {
-                          id_user: idCoach,
-                          dateNow: date.toISOString(),
-                          type: 'Coach'
-                      },
-                        function (data) {
-                            $.each(data, function (index, d) {
-                                var myTitle = (d['isFree'] == true) ? "Libre" : (d['id_student'] == '<?php echo $_SESSION['_id']; ?>') ? '<?php echo $_SESSION['pseudo']; ?>' : 'Occupé';
-                                var myStart = new Date(d['date']);
-                                var myEnd = transformDateStartToEnd(myStart, d['duration']);
-                                var myColor = ((myTitle == "Libre") ? "#1E9C1E" : "#FF0000");
-                                var isEditable = (d['isFree'] == true) ? true : false;
-                                tabEvents.push({id: d['_id'], title: myTitle, start: myStart, end: myEnd, color: myColor, editable: isEditable});
-                            });
-                        }
-                      );
-
+                      var fullName = name.outerHTML.substr(4, name.outerHTML.length - 9);
+                      
+                      
+                        promiseOfPlanning = $.post('http://localhost:4242/getPlanning', {
+                            id_user: idCoach,
+                            dateNow: date.toISOString(),
+                            type: 'Coach'
+                        },
+                          function (data) {
+                              $.each(data, function (index, d) {
+                                  var myTitle = (d['isFree'] == true) ? "Libre" : (d['id_student'] == '<?php if(isset($_SESSION['_id'])){echo $_SESSION['_id'];} ?>') ? '<?php if(isset($_SESSION['_id'])){echo $_SESSION['pseudo'];} ?>' : 'Occupé';
+                                  var myStart = new Date(d['date']);
+                                  var myEnd = transformDateStartToEnd(myStart, d['duration']);
+                                  var myColor = ((myTitle == "Libre") ? "#1E9C1E" : "#FF0000");
+                                  var isEditable = (d['isFree'] == true) ? true : false;
+                                  tabEvents.push({id: d['_id'], title: myTitle, start: myStart, end: myEnd, color: myColor, editable: isEditable});
+                              });
+                          }
+                        );
+                      
                       promiseOfPlanning.then(function () {
                           console.log(tabEvents);                          
                           $('#rsvCalendar').fullCalendar('removeEvents');

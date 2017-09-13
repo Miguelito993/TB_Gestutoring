@@ -156,6 +156,7 @@ Page de session vidéo et chat
             var partnerID;
             var matiere;
             var idSession;
+            var myPseudo = '<?php echo $_SESSION['pseudo']; ?>';
 
             var promiseOfMatiere;
             var promiseOfPartner;
@@ -307,7 +308,7 @@ Page de session vidéo et chat
                 step2();
                 if('<?php echo $_SESSION['type']; ?>' == 'Student'){
                     $('#myNotation').modal('show');
-                    $('#idUser').val(partnerID);
+                    $('#idUser').val(partnerID);                    
                 }else{
                     socket.emit('close_session', {idSession: idSession});
                     socket.emit('close_socket', {myPseudo: '<?php echo $_SESSION['pseudo']; ?>', partnerPseudo: partner});                    
@@ -320,8 +321,10 @@ Page de session vidéo et chat
                 idSession = null;
                 c = null;
                 $('#infoUtil').html('');
-                peer.destroy();                
-                window.location.replace(index.php);
+                peer.destroy();
+                if('<?php echo $_SESSION['type']; ?>' == 'Coach'){
+                    window.location.replace('index.php');
+                }
             }              
                
             promiseOfMeeting.then(function (data) {                

@@ -44,7 +44,7 @@ jQuery(document).ready(function ($) {
                 $('#alertPopUpAddDatas').attr('class', 'alert alert-success');
                 $('#alertPopUpAddDatas').attr('role', 'alert');
                 $('#alertPopUpAddDatas').empty();
-                $('#alertPopUpAddDatas').append("Contenu additionnel ajouté");
+                $('#alertPopUpAddDatas').append("Support ajouté");
 
                 setTimeout(function () {
                     $('#myAddDatas').modal('hide');

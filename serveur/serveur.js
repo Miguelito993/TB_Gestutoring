@@ -389,7 +389,7 @@ var submitNotation = function (db, info, callback) {
     collection.insertOne({
         notation: parseInt(info.note),
         description: ent.encode(info.comment),
-        id_coach: ObjectId(info.idUser)
+        id_coach: ObjectId(info.id_coach)
     }, function (err, docs) {
         assert.equal(err, null);
         callback(docs);
@@ -751,8 +751,8 @@ app.get('/getDataList/:matiere/:idCoach', function (req, res) {
                 for (var i = 0; i < result.length; i++) {
                     if (result[i].access === 'public') {
                         dataList.push(result[i]);
-                    } else {
-                        if (result[i].id_user.toString() === info.idCoach) {
+                    } else {                        
+                        if (result[i].id_user.toString() === info.idCoach) {                            
                             dataList.push(result[i]);
                         }
                     }
